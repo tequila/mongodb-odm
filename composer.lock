@@ -4,101 +4,35 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a58a6012923bed822f0217b2d927d230",
-    "content-hash": "df596fabd339aae5be768ab8329a9b9f",
+    "hash": "4ad1aa03031135c11fee90f22aaa7fd5",
+    "content-hash": "c3e8662ee8399a51b4f63b5f469a9d2e",
     "packages": [
         {
-            "name": "mongodb/mongodb",
-            "version": "1.0.3",
+            "name": "symfony/options-resolver",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/mongodb/mongo-php-library.git",
-                "reference": "3c742f3ceffc4dc67fee02dc6ebfc2e7cb403b7c"
+                "url": "https://github.com/symfony/options-resolver.git",
+                "reference": "45940bcad6388b3b6058107eca67ced738d205bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/3c742f3ceffc4dc67fee02dc6ebfc2e7cb403b7c",
-                "reference": "3c742f3ceffc4dc67fee02dc6ebfc2e7cb403b7c",
-                "shasum": ""
-            },
-            "require": {
-                "ext-mongodb": "^1.1.0",
-                "php": ">=5.4"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "MongoDB\\": "src/"
-                },
-                "files": [
-                    "src/functions.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Jeremy Mikola",
-                    "email": "jmikola@gmail.com"
-                },
-                {
-                    "name": "Hannes Magnusson",
-                    "email": "bjori@mongodb.com"
-                },
-                {
-                    "name": "Derick Rethans",
-                    "email": "github@derickrethans.nl"
-                }
-            ],
-            "description": "MongoDB driver library",
-            "homepage": "https://jira.mongodb.org/browse/PHPLIB",
-            "keywords": [
-                "database",
-                "driver",
-                "mongodb",
-                "persistence"
-            ],
-            "time": "2016-09-23 19:38:29"
-        },
-        {
-            "name": "symfony/event-dispatcher",
-            "version": "v3.1.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "c0c00c80b3a69132c4e55c3e7db32b4a387615e5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/c0c00c80b3a69132c4e55c3e7db32b4a387615e5",
-                "reference": "c0c00c80b3a69132c4e55c3e7db32b4a387615e5",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/45940bcad6388b3b6058107eca67ced738d205bb",
+                "reference": "45940bcad6388b3b6058107eca67ced738d205bb",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.5.9"
             },
-            "require-dev": {
-                "psr/log": "~1.0",
-                "symfony/config": "~2.8|~3.0",
-                "symfony/dependency-injection": "~2.8|~3.0",
-                "symfony/expression-language": "~2.8|~3.0",
-                "symfony/stopwatch": "~2.8|~3.0"
-            },
-            "suggest": {
-                "symfony/dependency-injection": "",
-                "symfony/http-kernel": ""
-            },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.1-dev"
+                    "dev-master": "3.2-dev"
                 }
             },
             "autoload": {
                 "psr-4": {
-                    "Symfony\\Component\\EventDispatcher\\": ""
+                    "Symfony\\Component\\OptionsResolver\\": ""
                 },
                 "exclude-from-classmap": [
                     "/Tests/"
@@ -118,28 +52,32 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-            "description": "Symfony EventDispatcher Component",
+            "description": "Symfony OptionsResolver Component",
             "homepage": "https://symfony.com",
-            "time": "2016-07-19 10:45:57"
+            "keywords": [
+                "config",
+                "configuration",
+                "options"
+            ],
+            "time": "2016-05-13 18:13:23"
         },
         {
-            "name": "tequila/mongodb",
-            "version": "v0.1.0",
+            "name": "tequila/mongodb-driver-wrapper",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/tequila/mongodb.git",
-                "reference": "9fb19505794a6d2cf50803d1c448dbc942239adf"
+                "url": "https://github.com/tequila/mongodb-driver-wrapper.git",
+                "reference": "2003dbe90752db723e182c189b07a2761e30dde4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tequila/mongodb/zipball/9fb19505794a6d2cf50803d1c448dbc942239adf",
-                "reference": "9fb19505794a6d2cf50803d1c448dbc942239adf",
+                "url": "https://api.github.com/repos/tequila/mongodb-driver-wrapper/zipball/2003dbe90752db723e182c189b07a2761e30dde4",
+                "reference": "2003dbe90752db723e182c189b07a2761e30dde4",
                 "shasum": ""
             },
             "require": {
-                "mongodb/mongodb": "^1.0",
-                "php": "^5.6 || ^7.0 || ^7.1",
-                "symfony/event-dispatcher": "^3.1"
+                "ext-mongodb": ">=1.1.0",
+                "php": ">=5.6"
             },
             "type": "library",
             "autoload": {
@@ -157,26 +95,70 @@
                     "email": "petrbuchyn@gmail.com"
                 }
             ],
-            "description": "MongoDB abstraction layer for PHP",
-            "homepage": "https://github.com/tequila/mongodb",
+            "description": "Wraps MongoDB driver classes to have access to their internals",
             "keywords": [
+                "PHP7",
                 "database",
                 "driver",
+                "hhvm",
                 "mongodb",
-                "persistence",
-                "tequila"
+                "php"
             ],
-            "time": "2016-09-28 20:54:24"
+            "time": "2016-10-29 21:31:57"
+        },
+        {
+            "name": "tequila/mongodb-php-lib",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tequila/mongodb-php-lib.git",
+                "reference": "f7dd521beee5912f95a5cfcd9b32865c083b7f88"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tequila/mongodb-php-lib/zipball/f7dd521beee5912f95a5cfcd9b32865c083b7f88",
+                "reference": "f7dd521beee5912f95a5cfcd9b32865c083b7f88",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mongodb": ">=1.1.0",
+                "php": ">=5.6",
+                "symfony/options-resolver": ">=2.8",
+                "tequila/mongodb-driver-wrapper": "dev-master"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Tequila\\MongoDB\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Petr Buchin",
+                    "email": "petrbuchyn@gmail.com"
+                }
+            ],
+            "description": "PHP MongoDB abstraction layer (driver library)",
+            "time": "2016-10-30 22:32:34"
         }
     ],
     "packages-dev": [],
     "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": [],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "tequila/mongodb-php-lib": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^5.6 || ^7.0 || ^7.1"
+        "php": ">=5.6"
     },
     "platform-dev": []
 }

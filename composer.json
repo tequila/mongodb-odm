@@ -1,10 +1,10 @@
 {
     "name": "tequila/mongodb-odm",
-    "description": "MongoDB ODM for PHP 5.6 and PHP 7",
+    "description": "MongoDB ODM for PHP",
     "type": "library",
     "require": {
-        "php": "^5.6 || ^7.0 || ^7.1",
-        "tequila/mongodb": "^0.1.0"
+        "php": ">=5.6",
+        "tequila/mongodb-php-lib": "dev-master"
     },
     "license": "MIT",
     "authors": [
@@ -12,5 +12,6 @@
             "name": "Petr Buchin",
             "email": "petrbuchyn@gmail.com"
         }
-    ]
+    ],
+    "minimum-stability": "dev"
 }
