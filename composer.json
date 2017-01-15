@@ -4,7 +4,8 @@
     "type": "library",
     "require": {
         "php": ">=5.6",
-        "tequila/mongodb-php-lib": "dev-master"
+        "tequila/mongodb-php-lib": "dev-master",
+        "symfony/event-dispatcher": "^3.2"
     },
     "autoload": {
         "psr-4": { "Tequila\\MongoDB\\ODM\\": "src/" }
