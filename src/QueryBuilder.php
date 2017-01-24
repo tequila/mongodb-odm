@@ -44,7 +44,7 @@ class QueryBuilder
         $cursor = $this->collection->find($this->filter, $this->options);
 
         if ($this->documentListener) {
-            $cursor = new Cursor($cursor, $this->documentListener);
+            $cursor = new DocumentsCursor($cursor, $this->documentListener);
         }
 
         return $cursor;

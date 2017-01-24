@@ -4,7 +4,6 @@ namespace Tequila\MongoDB\ODM;
 
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Persistable;
-use Tequila\MongoDB\WriteModelInterface;
 
 interface DocumentInterface extends Persistable
 {
@@ -19,7 +18,7 @@ interface DocumentInterface extends Persistable
     public function setId($objectId);
 
     /**
-     * @return WriteModelInterface|null
+     * @param BulkWriteBuilder $manager
      */
-    public function getWriteModel();
+    public function setBulkWriteBuilder(BulkWriteBuilder $manager);
 }

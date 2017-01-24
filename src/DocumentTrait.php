@@ -3,6 +3,7 @@
 namespace Tequila\MongoDB\ODM;
 
 use MongoDB\BSON\ObjectID;
+use Tequila\MongoDB\Collection;
 use Tequila\MongoDB\Write\Model\DeleteOne;
 use Tequila\MongoDB\Write\Model\ReplaceOne;
 use Tequila\MongoDB\Write\Model\UpdateOne;
@@ -10,6 +11,11 @@ use Tequila\MongoDB\WriteModelInterface;
 
 trait DocumentTrait
 {
+    /**
+     * @var Collection
+     */
+    private $collection;
+
     /**
      * @var ObjectID|null|mixed
      */
@@ -171,6 +177,14 @@ trait DocumentTrait
         $this->update['$set'][$field] = $value;
 
         return $this;
+    }
+
+    /**
+     * @param Collection $collection
+     */
+    public function setCollection(Collection $collection)
+    {
+        $this->collection = $collection;
     }
 
     /**
