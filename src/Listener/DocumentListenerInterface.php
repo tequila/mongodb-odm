@@ -1,6 +1,8 @@
 <?php
 
-namespace Tequila\MongoDB\ODM;
+namespace Tequila\MongoDB\ODM\Listener;
+
+use Tequila\MongoDB\ODM\DocumentInterface;
 
 interface DocumentListenerInterface
 {

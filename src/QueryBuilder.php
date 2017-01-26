@@ -4,6 +4,7 @@ namespace Tequila\MongoDB\ODM;
 
 use Tequila\MongoDB\Collection;
 use Tequila\MongoDB\CursorInterface;
+use Tequila\MongoDB\ODM\Listener\DocumentListenerInterface;
 use Tequila\MongoDB\QueryInterface;
 
 class QueryBuilder

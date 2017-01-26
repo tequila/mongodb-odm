@@ -3,6 +3,7 @@
 namespace Tequila\MongoDB\ODM;
 
 use Tequila\MongoDB\CursorInterface;
+use Tequila\MongoDB\ODM\Listener\DocumentListenerInterface;
 
 class DocumentsCursor implements CursorInterface
 {
