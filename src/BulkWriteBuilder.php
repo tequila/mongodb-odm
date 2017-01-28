@@ -8,6 +8,12 @@ use Tequila\MongoDB\ODM\WriteModel\DeleteOneDocument;
 use Tequila\MongoDB\ODM\WriteModel\InsertOneDocument;
 use Tequila\MongoDB\ODM\WriteModel\ReplaceOneDocument;
 use Tequila\MongoDB\ODM\WriteModel\UpdateOneDocument;
+use Tequila\MongoDB\Write\Model\DeleteMany;
+use Tequila\MongoDB\Write\Model\DeleteOne;
+use Tequila\MongoDB\Write\Model\InsertOne;
+use Tequila\MongoDB\Write\Model\ReplaceOne;
+use Tequila\MongoDB\Write\Model\UpdateMany;
+use Tequila\MongoDB\Write\Model\UpdateOne;
 use Tequila\MongoDB\WriteModelInterface;
 
 class BulkWriteBuilder
@@ -47,6 +53,10 @@ class BulkWriteBuilder
      */
     public function flush(array $bulkWriteOptions = [])
     {
+        if (0 === count($this->writeModels)) {
+            throw new LogicException('BulkWriteBuilder does not contain any write operations.');
+        }
+
         $result = $this->collection->bulkWrite($this->writeModels, $bulkWriteOptions);
         $this->writeModels = [];
 
@@ -54,10 +64,108 @@ class BulkWriteBuilder
     }
 
     /**
+     * @param array $filter
+     * @param array $options
+     * @return $this
+     */
+    public function deleteMany(array $filter, array $options = [])
+    {
+        $this->writeModels[] = new DeleteMany($filter, $options);
+
+        return $this;
+    }
+
+    /**
+     * @param array $filter
+     * @param array $options
+     * @return $this
+     */
+    public function deleteOne(array $filter, array $options = [])
+    {
+        $this->writeModels[] = new DeleteOne($filter, $options);
+
+        return $this;
+    }
+
+    /**
+     * @param array $documents
+     * @return $this
+     */
+    public function insertMany(array $documents)
+    {
+        foreach ($documents as $position => $document) {
+            try {
+                $this->writeModels[] = new InsertOne($document);
+            } catch (\Tequila\MongoDB\Exception\InvalidArgumentException $e) {
+                throw new InvalidArgumentException(
+                    sprintf(
+                        '%s during adding $documents[%d]: %s',
+                        \Tequila\MongoDB\Exception\InvalidArgumentException::class,
+                        $position,
+                        $e->getMessage()
+                    )
+                );
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $document
+     * @return $this
+     */
+    public function insertOne($document)
+    {
+        $this->writeModels[] = new InsertOne($document);
+
+        return $this;
+    }
+
+    /**
+     * @param array $filter
+     * @param array $update
+     * @param array $options
+     * @return $this
+     */
+    public function updateMany(array $filter, array $update, array $options = [])
+    {
+        $this->writeModels[] = new UpdateMany($filter, $update, $options);
+
+        return $this;
+    }
+
+    /**
+     * @param array $filter
+     * @param array $update
+     * @param array $options
+     * @return $this
+     */
+    public function updateOne(array $filter, array $update, array $options = [])
+    {
+        $this->writeModels[] = new UpdateOne($filter, $update, $options);
+
+        return $this;
+    }
+
+    /**
+     * @param array $filter
+     * @param array|object $replacement
+     * @param array $options
+     * @return $this
+     */
+    public function replaceOne(array $filter, $replacement, array $options = [])
+    {
+        $this->writeModels[] = new ReplaceOne($filter, $replacement, $options);
+
+        return $this;
+    }
+
+    /**
      * @param DocumentInterface $document
      * @return DeleteOneDocument
      */
-    public function delete(DocumentInterface $document)
+    public function deleteDocument(DocumentInterface $document)
     {
         if (null === $document->getId()) {
             throw new InvalidArgumentException('Attempt to delete a new document.');
@@ -77,7 +185,7 @@ class BulkWriteBuilder
     /**
      * @param DocumentInterface $document
      */
-    public function insert(DocumentInterface $document)
+    public function insertDocument(DocumentInterface $document)
     {
         $this->writeModels[\spl_object_hash($document)] = new InsertOneDocument($document);
     }
@@ -86,7 +194,7 @@ class BulkWriteBuilder
      * @param DocumentInterface $document
      * @return UpdateOneDocument
      */
-    public function update(DocumentInterface $document)
+    public function updateDocument(DocumentInterface $document)
     {
         if (null === $document->getId()) {
             throw new InvalidArgumentException('Attempt to update a new document.');
@@ -107,7 +215,7 @@ class BulkWriteBuilder
      * @param DocumentInterface $document
      * @return ReplaceOneDocument
      */
-    public function replace(DocumentInterface $document)
+    public function replaceDocument(DocumentInterface $document)
     {
         if (null === $document->getId()) {
             throw new InvalidArgumentException('Attempt to replace a new document.');

@@ -3,9 +3,12 @@
 namespace Tequila\MongoDB\ODM;
 
 use Tequila\MongoDB\Client;
+use Tequila\MongoDB\ODM\Traits\CollectionListenerTrait;
 
 class Connection
 {
+    use CollectionListenerTrait;
+
     /**
      * @var Client
      */
@@ -72,8 +75,8 @@ class Connection
     }
 
     /**
-     * @param $databaseName
-     * @param $collectionName
+     * @param string $databaseName
+     * @param string $collectionName
      * @param array $options
      * @return DocumentsCollection
      */
@@ -84,19 +87,28 @@ class Connection
             $collectionName,
             $options
         );
+        $collection = new DocumentsCollection($collection);
 
-        return new DocumentsCollection($collection);
+        if (null !== $this->collectionListener) {
+            $this->collectionListener->collectionSelected($collection);
+        }
+
+        return $collection;
     }
 
     /**
-     * @param $databaseName
+     * @param string $databaseName
      * @param array $options
      * @return Database
      */
     public function selectDatabase($databaseName, array $options = [])
     {
         $database = $this->mongoClient->selectDatabase($databaseName, $options);
+        $database = new Database($database);
+        if (null !== $this->collectionListener) {
+            $database->setCollectionListener($this->collectionListener);
+        }
 
-        return new Database($database);
+        return $database;
     }
 }

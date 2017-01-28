@@ -18,7 +18,7 @@ interface DocumentInterface extends Persistable
     public function setId($objectId);
 
     /**
-     * @param BulkWriteBuilder $manager
+     * @param BulkWriteBuilder $builder
      */
-    public function setBulkWriteBuilder(BulkWriteBuilder $manager);
+    public function setBulkWriteBuilder(BulkWriteBuilder $builder);
 }

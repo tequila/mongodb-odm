@@ -4,9 +4,13 @@ namespace Tequila\MongoDB\ODM;
 
 use MongoDB\Driver\ReadPreference;
 use Tequila\MongoDB\CommandInterface;
+use Tequila\MongoDB\ODM\Listener\CollectionListenerInterface;
+use Tequila\MongoDB\ODM\Traits\CollectionListenerTrait;
 
 class Database
 {
+    use CollectionListenerTrait;
+
     /**
      * @var \Tequila\MongoDB\Database
      */
@@ -92,7 +96,20 @@ class Database
     public function selectCollection($collectionName, array $options = [])
     {
         $collection = $this->mongoDatabase->selectCollection($collectionName, $options);
+        $collection = new DocumentsCollection($collection);
 
-        return new DocumentsCollection($collection);
+        if (null !== $this->collectionListener) {
+            $this->collectionListener->collectionSelected($collection);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * @param CollectionListenerInterface $listener
+     */
+    public function setCollectionListener(CollectionListenerInterface $listener)
+    {
+        $this->collectionListener = $listener;
     }
 }
