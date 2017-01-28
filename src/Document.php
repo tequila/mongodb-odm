@@ -2,8 +2,6 @@
 
 namespace Tequila\MongoDB\ODM;
 
-use Tequila\MongoDB\ODM\Exception\LogicException;
-
 abstract class Document implements DocumentInterface
 {
     use DocumentTrait;
@@ -30,17 +28,5 @@ abstract class Document implements DocumentInterface
     public function delete()
     {
         return $this->getBulkWriteBuilder()->deleteDocument($this);
-    }
-
-    /**
-     * @return BulkWriteBuilder
-     */
-    private function getBulkWriteBuilder()
-    {
-        if (null === $this->bulkWriteBuilder) {
-            throw new LogicException('BulkWriteBuilder was not set to this document.');
-        }
-
-        return $this->bulkWriteBuilder;
     }
 }
