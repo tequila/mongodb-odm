@@ -18,18 +18,6 @@ trait DocumentTrait
     private $bulkWriteBuilder;
 
     /**
-     * @return BulkWriteBuilder
-     */
-    private function getBulkWriteBuilder()
-    {
-        if (null === $this->bulkWriteBuilder) {
-            throw new LogicException('BulkWriteBuilder was not set to this document.');
-        }
-
-        return $this->bulkWriteBuilder;
-    }
-
-    /**
      * @param BulkWriteBuilder $builder
      */
     public function setBulkWriteBuilder(BulkWriteBuilder $builder)
@@ -51,5 +39,17 @@ trait DocumentTrait
     public function setId($id)
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return BulkWriteBuilder
+     */
+    private function getBulkWriteBuilder()
+    {
+        if (null === $this->bulkWriteBuilder) {
+            throw new LogicException('BulkWriteBuilder was not set to this document.');
+        }
+
+        return $this->bulkWriteBuilder;
     }
 }
