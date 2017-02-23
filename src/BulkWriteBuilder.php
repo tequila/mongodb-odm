@@ -2,14 +2,17 @@
 
 namespace Tequila\MongoDB\ODM;
 
+use Tequila\MongoDB\Collection;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\WriteModel\DeleteOneDocument;
+use Tequila\MongoDB\ODM\WriteModel\DocumentAwareWriteModel;
 use Tequila\MongoDB\ODM\WriteModel\InsertOneDocument;
 use Tequila\MongoDB\ODM\WriteModel\ReplaceOneDocument;
 use Tequila\MongoDB\ODM\WriteModel\UpdateOneDocument;
 use Tequila\MongoDB\Write\Model\DeleteMany;
 use Tequila\MongoDB\Write\Model\DeleteOne;
+use Tequila\MongoDB\Write\Model\InsertMany;
 use Tequila\MongoDB\Write\Model\InsertOne;
 use Tequila\MongoDB\Write\Model\ReplaceOne;
 use Tequila\MongoDB\Write\Model\UpdateMany;
@@ -28,36 +31,42 @@ class BulkWriteBuilder
     ];
 
     /**
-     * @var DocumentsCollection
-     */
-    private $collection;
-
-    /**
      * @var WriteModelInterface[]
      */
     private $writeModels = [];
 
     /**
-     * @param DocumentsCollection $collection
-     */
-    public function __construct(DocumentsCollection $collection)
-    {
-        $this->collection = $collection;
-    }
-
-    /**
      * Flushes bulk write to MongoDB
      *
+     * @param Collection $collection
      * @param array $bulkWriteOptions
      * @return \Tequila\MongoDB\WriteResult
      */
-    public function flush(array $bulkWriteOptions = [])
+    public function flush(Collection $collection, array $bulkWriteOptions = [])
     {
         if (0 === count($this->writeModels)) {
             throw new LogicException('BulkWriteBuilder does not contain any write operations.');
         }
 
-        $result = $this->collection->bulkWrite($this->writeModels, $bulkWriteOptions);
+        $result = $collection->bulkWrite($this->writeModels, $bulkWriteOptions);
+        if ($result->isAcknowledged()) {
+            // set ids to inserted documents
+            foreach ($result->getInsertedIds() as $position => $id) {
+                if ($writeModel = $this->writeModels[$position] instanceof DocumentAwareWriteModel) {
+                    /** @var DocumentAwareWriteModel $writeModel */
+                    $writeModel->getDocument()->setId($id);
+                }
+            }
+
+            // set ids to upserted documents
+            foreach ($result->getUpsertedIds() as $position => $id) {
+                if ($writeModel = $this->writeModels[$position] instanceof DocumentAwareWriteModel) {
+                    /** @var DocumentAwareWriteModel $writeModel */
+                    $writeModel->getDocument()->setId($id);
+                }
+            }
+        }
+
         $this->writeModels = [];
 
         return $result;
@@ -93,20 +102,7 @@ class BulkWriteBuilder
      */
     public function insertMany(array $documents)
     {
-        foreach ($documents as $position => $document) {
-            try {
-                $this->writeModels[] = new InsertOne($document);
-            } catch (\Tequila\MongoDB\Exception\InvalidArgumentException $e) {
-                throw new InvalidArgumentException(
-                    sprintf(
-                        '%s during adding $documents[%d]: %s',
-                        \Tequila\MongoDB\Exception\InvalidArgumentException::class,
-                        $position,
-                        $e->getMessage()
-                    )
-                );
-            }
-        }
+        $this->writeModels[] = new InsertMany($documents);
 
         return $this;
     }
@@ -236,7 +232,8 @@ class BulkWriteBuilder
      * @param DocumentInterface $document
      * @param string $operation - "delete", "update" or "replace"
      */
-    private function ensureOneOperationPerDocument(DocumentInterface $document, $operation) {
+    private function ensureOneOperationPerDocument(DocumentInterface $document, $operation)
+    {
         $key = \spl_object_hash($document);
         $firstOperation = self::getOperationByModelClass(get_class($this->writeModels[$key]));
 

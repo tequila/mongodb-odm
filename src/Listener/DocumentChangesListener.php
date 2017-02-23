@@ -2,13 +2,14 @@
 
 namespace Tequila\MongoDB\ODM\Listener;
 
+use Tequila\MongoDB\DocumentListenerInterface;
 use Tequila\MongoDB\ODM\BulkWriteBuilder;
 use Tequila\MongoDB\ODM\DocumentInterface;
 
 class DocumentChangesListener implements DocumentListenerInterface
 {
     /**
-     * @var BulkWriteBuilder
+     * @var BulkWriteBuilder[]
      */
     private $bulkWriteBuilder;
 
@@ -23,8 +24,10 @@ class DocumentChangesListener implements DocumentListenerInterface
     /**
      * @param DocumentInterface $document
      */
-    public function documentFetched(DocumentInterface $document)
+    public function onDocument($document)
     {
-        $document->setBulkWriteBuilder($this->bulkWriteBuilder);
+        if ($document instanceof DocumentInterface) {
+            $document->setBulkWriteBuilder($this->bulkWriteBuilder);
+        }
     }
 }
