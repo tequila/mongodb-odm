@@ -5,7 +5,7 @@ namespace Tequila\MongoDB\ODM;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Persistable;
 
-interface DocumentInterface extends Persistable
+interface DocumentInterface extends Persistable, BulkWriteBuilderAwareInterface
 {
     /**
      * @return ObjectID|mixed
@@ -16,9 +16,4 @@ interface DocumentInterface extends Persistable
      * @param ObjectID|mixed $objectId
      */
     public function setId($objectId);
-
-    /**
-     * @param BulkWriteBuilder $builder
-     */
-    public function setBulkWriteBuilder(BulkWriteBuilder $builder);
 }

@@ -3,7 +3,7 @@
 namespace Tequila\MongoDB\ODM;
 
 use Tequila\MongoDB\Collection;
-use Tequila\MongoDB\CursorInterface;
+use Tequila\MongoDB\Cursor;
 use Tequila\MongoDB\QueryInterface;
 
 class QueryBuilder
@@ -20,7 +20,7 @@ class QueryBuilder
 
     /**
      * @param Collection $collection
-     * @return CursorInterface
+     * @return Cursor
      */
     public function execute(Collection $collection)
     {

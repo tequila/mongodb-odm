@@ -2,7 +2,6 @@
 
 namespace Tequila\MongoDB\ODM;
 
-
 class BulkWriteBuilderFactory
 {
     /**
@@ -16,7 +15,7 @@ class BulkWriteBuilderFactory
      */
     public function getBulkWriteBuilder($namespace)
     {
-        if (!isset($this->builders[$namespace])) {
+        if (!array_key_exists($namespace, $this->builders)) {
             $this->builders[$namespace] = new BulkWriteBuilder();
         }
 
