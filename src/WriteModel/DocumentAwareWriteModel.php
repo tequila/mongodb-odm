@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\WriteModel;
 
-use Tequila\MongoDB\ODM\DocumentInterface;
+use Tequila\MongoDB\DocumentInterface;
 use Tequila\MongoDB\WriteModelInterface;
 
 abstract class DocumentAwareWriteModel implements WriteModelInterface

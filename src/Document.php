@@ -2,7 +2,10 @@
 
 namespace Tequila\MongoDB\ODM;
 
-abstract class Document implements DocumentInterface
+use MongoDB\BSON\Persistable;
+use Tequila\MongoDB\DocumentInterface;
+
+abstract class Document implements DocumentInterface, Persistable, BulkWriteBuilderAwareInterface
 {
     use DocumentTrait;
 

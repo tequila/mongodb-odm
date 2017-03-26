@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\WriteModel\Traits;
 
-use Tequila\MongoDB\ODM\DocumentInterface;
+use Tequila\MongoDB\DocumentInterface;
 
 trait FilterAndOptionsTrait
 {

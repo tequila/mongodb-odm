@@ -10,7 +10,7 @@ trait DocumentTrait
     /**
      * @var ObjectID|null|mixed
      */
-    private $id;
+    protected $id;
 
     /**
      * @var BulkWriteBuilder

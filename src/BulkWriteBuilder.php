@@ -3,10 +3,10 @@
 namespace Tequila\MongoDB\ODM;
 
 use Tequila\MongoDB\Collection;
+use Tequila\MongoDB\DocumentInterface;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\WriteModel\DeleteOneDocument;
-use Tequila\MongoDB\ODM\WriteModel\DocumentAwareWriteModel;
 use Tequila\MongoDB\ODM\WriteModel\InsertOneDocument;
 use Tequila\MongoDB\ODM\WriteModel\ReplaceOneDocument;
 use Tequila\MongoDB\ODM\WriteModel\UpdateOneDocument;
@@ -50,24 +50,6 @@ class BulkWriteBuilder
 
         $this->writeModels = array_values($this->writeModels);
         $result = $collection->bulkWrite($this->writeModels, $bulkWriteOptions);
-        if ($result->isAcknowledged()) {
-            // set ids to inserted documents
-            foreach ($result->getInsertedIds() as $position => $id) {
-                if ($writeModel = $this->writeModels[$position] instanceof DocumentAwareWriteModel) {
-                    /** @var DocumentAwareWriteModel $writeModel */
-                    $writeModel->getDocument()->setId($id);
-                }
-            }
-
-            // set ids to upserted documents
-            foreach ($result->getUpsertedIds() as $position => $id) {
-                if ($writeModel = $this->writeModels[$position] instanceof DocumentAwareWriteModel) {
-                    /** @var DocumentAwareWriteModel $writeModel */
-                    $writeModel->getDocument()->setId($id);
-                }
-            }
-        }
-
         $this->writeModels = [];
 
         return $result;
