@@ -3,22 +3,11 @@
 namespace Tequila\MongoDB\ODM;
 
 use Tequila\MongoDB\Collection;
-use Tequila\MongoDB\CursorInterface;
-use Tequila\MongoDB\ODM\Listener\DocumentListenerInterface;
+use Tequila\MongoDB\Cursor;
 use Tequila\MongoDB\QueryInterface;
 
 class QueryBuilder
 {
-    /**
-     * @var Collection
-     */
-    private $collection;
-
-    /**
-     * @var DocumentListenerInterface
-     */
-    private $documentListener;
-
     /**
      * @var array
      */
@@ -31,24 +20,11 @@ class QueryBuilder
 
     /**
      * @param Collection $collection
+     * @return Cursor
      */
-    public function __construct(Collection $collection)
+    public function execute(Collection $collection)
     {
-        $this->collection = $collection;
-    }
-
-    /**
-     * @return CursorInterface
-     */
-    public function execute()
-    {
-        $cursor = $this->collection->find($this->filter, $this->options);
-
-        if ($this->documentListener) {
-            $cursor = new DocumentsCursor($cursor, $this->documentListener);
-        }
-
-        return $cursor;
+        return $collection->find($this->filter, $this->options);
     }
 
     /**
@@ -146,14 +122,6 @@ class QueryBuilder
         $this->options['projection'] = $projection;
 
         return $this;
-    }
-
-    /**
-     * @param DocumentListenerInterface $listener
-     */
-    public function setDocumentListener(DocumentListenerInterface $listener)
-    {
-        $this->documentListener = $listener;
     }
 
     /**
