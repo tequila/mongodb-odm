@@ -218,7 +218,9 @@ class BulkWriteBuilder
      */
     private function ensureOneOperationPerDocument(DocumentInterface $document, $operation)
     {
-        $firstOperation = self::getOperationByModelClass(get_class($this->writeModels[$document->getId()]));
+        $firstOperation = self::getOperationByModelClass(
+            get_class($this->writeModels[(string)$document->getId()])
+        );
 
         if ($firstOperation !== $operation) {
             throw new LogicException(
