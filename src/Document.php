@@ -2,12 +2,22 @@
 
 namespace Tequila\MongoDB\ODM;
 
+use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Persistable;
 use Tequila\MongoDB\DocumentInterface;
+use Tequila\MongoDB\ODM\Exception\LogicException;
 
 abstract class Document implements DocumentInterface, Persistable, BulkWriteBuilderAwareInterface
 {
-    use DocumentTrait;
+    /**
+     * @var ObjectID|null|mixed
+     */
+    protected $id;
+
+    /**
+     * @var BulkWriteBuilder
+     */
+    private $bulkWriteBuilder;
 
     /**
      * @return WriteModel\UpdateOneDocument
@@ -31,5 +41,43 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
     public function delete()
     {
         return $this->getBulkWriteBuilder()->deleteDocument($this);
+    }
+
+    /**
+     * @param BulkWriteBuilder $builder
+     */
+    final public function setBulkWriteBuilder(BulkWriteBuilder $builder)
+    {
+        $this->bulkWriteBuilder = $builder;
+    }
+
+    /**
+     * @return mixed|ObjectID|null
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return BulkWriteBuilder
+     */
+    private function getBulkWriteBuilder()
+    {
+        if (null === $this->bulkWriteBuilder) {
+            throw new LogicException(
+                'BulkWriteBuilder was not set to this document. Maybe document is new?'
+            );
+        }
+
+        return $this->bulkWriteBuilder;
     }
 }

@@ -2,8 +2,10 @@
 
 namespace Tequila\MongoDB\ODM;
 
-use Tequila\MongoDB\Collection;
+use MongoDB\Driver\WriteConcern;
+use Tequila\MongoDB\BulkWrite;
 use Tequila\MongoDB\DocumentInterface;
+use Tequila\MongoDB\Manager;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\WriteModel\DeleteOneDocument;
@@ -31,25 +33,60 @@ class BulkWriteBuilder
     ];
 
     /**
+     * @var Manager
+     */
+    private $manager;
+
+    /**
+     * @var string
+     */
+    private $namespace;
+
+    /**
      * @var WriteModelInterface[]
      */
     private $writeModels = [];
 
     /**
+     * @param Manager $manager
+     * @param string $namespace
+     */
+    public function __construct(Manager $manager, $namespace)
+    {
+        $this->manager = $manager;
+        $this->namespace = $namespace;
+    }
+
+    /**
      * Flushes bulk write to MongoDB
      *
-     * @param Collection $collection
      * @param array $bulkWriteOptions
      * @return \Tequila\MongoDB\WriteResult
      */
-    public function flush(Collection $collection, array $bulkWriteOptions = [])
+    public function flush(array $bulkWriteOptions = [])
     {
         if (0 === count($this->writeModels)) {
             throw new LogicException('BulkWriteBuilder does not contain any write operations.');
         }
 
-        $this->writeModels = array_values($this->writeModels);
-        $result = $collection->bulkWrite($this->writeModels, $bulkWriteOptions);
+        $writeConcern = null;
+        if (isset($bulkWriteOptions['writeConcern'])) {
+            if (!$bulkWriteOptions['writeConcern'] instanceof WriteConcern) {
+                throw new InvalidArgumentException(
+                    sprintf(
+                        'Option "writeConcern" is expected to be "%s", "%s" given.',
+                        WriteConcern::class,
+                        getType($bulkWriteOptions['writeConcern'])
+                    )
+                );
+            }
+
+            $writeConcern = $bulkWriteOptions['writeConcern'];
+            unset($bulkWriteOptions['writeConcern']);
+        }
+
+        $bulkWrite = new BulkWrite($this->writeModels, $bulkWriteOptions);
+        $result = $this->manager->executeBulkWrite($this->namespace, $bulkWrite, $writeConcern);
         $this->writeModels = [];
 
         return $result;
