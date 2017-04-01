@@ -2,9 +2,8 @@
 
 namespace Tequila\MongoDB\ODM;
 
-use Tequila\MongoDB\Cursor;
 use Tequila\MongoDB\DocumentListenerInterface;
-use Tequila\MongoDB\ODM\Exception\LogicException;
+use Tequila\MongoDB\QueryCursor;
 use Tequila\MongoDB\QueryListenerInterface;
 
 class SetBulkWriteBuilderListener implements QueryListenerInterface, DocumentListenerInterface
@@ -13,11 +12,6 @@ class SetBulkWriteBuilderListener implements QueryListenerInterface, DocumentLis
      * @var BulkWriteBuilderFactory
      */
     private $bulkBuilderFactory;
-
-    /**
-     * @var string[]
-     */
-    private $cursorHashToNamespaceMap;
 
     /**
      * @param BulkWriteBuilderFactory $bulkBuilderFactory
@@ -30,26 +24,20 @@ class SetBulkWriteBuilderListener implements QueryListenerInterface, DocumentLis
     /**
      * @inheritdoc
      */
-    public function onQueryExecuted($namespace, $filter, array $options, Cursor $cursor)
+    public function onQueryExecuted($namespace, $filter, array $options, QueryCursor $cursor)
     {
         $cursor->setDocumentListener($this);
-        $this->cursorHashToNamespaceMap[\spl_object_hash($cursor)] = $namespace;
     }
 
     /**
      * @inheritdoc
      */
-    public function onDocument(Cursor $cursor, $document)
+    public function onDocument(QueryCursor $cursor, $document)
     {
         if ($document instanceof BulkWriteBuilderAwareInterface) {
-            $cursorHash = \spl_object_hash($cursor);
-            if (!array_key_exists($cursorHash, $this->cursorHashToNamespaceMap)) {
-                throw new LogicException(
-                    'Namespace for $cursor is not found. $cursor must have been tracked by the onQueryExecuted().'
-                );
-            }
-            $namespace = $this->cursorHashToNamespaceMap[$cursorHash];
-            $document->setBulkWriteBuilder($this->bulkBuilderFactory->getBulkWriteBuilder($namespace));
+            $document->setBulkWriteBuilder(
+                $this->bulkBuilderFactory->getBulkWriteBuilder($cursor->getNamespace())
+            );
         }
     }
 }
