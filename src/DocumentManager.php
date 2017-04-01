@@ -5,7 +5,6 @@ namespace Tequila\MongoDB\ODM;
 use MongoDB\BSON\Serializable;
 use Tequila\MongoDB\Collection;
 use Tequila\MongoDB\Database;
-use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 
 class DocumentManager
 {
@@ -30,30 +29,36 @@ class DocumentManager
     private $repositoryFactory;
 
     /**
+     * @var DocumentMetadataFactoryInterface
+     */
+    private $metadataFactory;
+
+    /**
      * @param Database $database
      * @param BulkWriteBuilderFactory $bulkWriteBuilderFactory
      * @param DocumentRepositoryFactoryInterface $repositoryFactory
+     * @param DocumentMetadataFactoryInterface $metadataFactory
      */
     public function __construct(
         Database $database,
         BulkWriteBuilderFactory $bulkWriteBuilderFactory,
-        DocumentRepositoryFactoryInterface $repositoryFactory
+        DocumentRepositoryFactoryInterface $repositoryFactory,
+        DocumentMetadataFactoryInterface $metadataFactory
     ) {
         $this->database = $database;
         $this->bulkWriteBuilderFactory = $bulkWriteBuilderFactory;
         $this->repositoryFactory = $repositoryFactory;
+        $this->metadataFactory = $metadataFactory;
     }
 
     /**
-     * @param string $collectionName
+     * @param string $documentClass
      * @return BulkWriteBuilder
      */
-    public function getBulkWriteBuilder($collectionName)
+    public function getBulkWriteBuilder($documentClass)
     {
-        if (!$collectionName) {
-            throw new InvalidArgumentException('$collectionName cannot be empty.');
-        }
-        $namespace = $this->database->getDatabaseName() . '.' . $collectionName;
+        $metadata = $this->metadataFactory->getDocumentMetadata($documentClass);
+        $namespace = $this->database->getDatabaseName() . '.' . $metadata->getCollectionName();
 
         return $this->bulkWriteBuilderFactory->getBulkWriteBuilder($namespace);
     }
@@ -77,12 +82,23 @@ class DocumentManager
     }
 
     /**
-     * @param string $repositoryClass
+     * @param string $documentClass
+     * @return Collection
+     */
+    public function getCollectionByDocumentClass($documentClass)
+    {
+        $metadata = $this->metadataFactory->getDocumentMetadata($documentClass);
+
+        return $this->getCollection($metadata->getCollectionName(), $metadata->getCollectionOptions());
+    }
+
+    /**
+     * @param string $documentClass
      * @return DocumentRepository
      */
-    public function getRepository($repositoryClass)
+    public function getRepository($documentClass)
     {
-        return $this->repositoryFactory->getDocumentRepository($this, $repositoryClass);
+        return $this->repositoryFactory->getDocumentRepository($this, $documentClass);
     }
 
     /**
