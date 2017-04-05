@@ -58,6 +58,14 @@ class BulkWriteBuilder
     }
 
     /**
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->writeModels);
+    }
+
+    /**
      * Flushes bulk write to MongoDB
      *
      * @param array $bulkWriteOptions

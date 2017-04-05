@@ -36,4 +36,9 @@ class BulkWriteBuilderFactory
 
         return $this->builders[$namespace];
     }
+
+    public function getBulkWriteBuilders()
+    {
+        return $this->builders;
+    }
 }

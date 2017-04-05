@@ -62,10 +62,6 @@ class DefaultMetadataFactory implements DocumentMetadataFactoryInterface
                 );
             }
 
-            if (null === $metadata->getRepositoryClass()) {
-                $metadata->setRepositoryClass(DocumentRepository::class);
-            }
-
             $this->metadataCache[$documentClass] = $metadata;
         }
 

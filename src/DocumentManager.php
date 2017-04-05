@@ -5,6 +5,7 @@ namespace Tequila\MongoDB\ODM;
 use MongoDB\BSON\Serializable;
 use Tequila\MongoDB\Collection;
 use Tequila\MongoDB\Database;
+use Tequila\MongoDB\DocumentInterface;
 
 class DocumentManager
 {
@@ -49,6 +50,28 @@ class DocumentManager
         $this->bulkWriteBuilderFactory = $bulkWriteBuilderFactory;
         $this->repositoryFactory = $repositoryFactory;
         $this->metadataFactory = $metadataFactory;
+    }
+
+    /**
+     * @param DocumentInterface $document
+     */
+    public function addToBulk(DocumentInterface $document)
+    {
+        if (!$document->getId()) {
+            $this->getBulkWriteBuilder(get_class($document))->insertDocument($document);
+        }
+    }
+
+    /**
+     * @param array $bulkWriteOptions
+     */
+    public function flush(array $bulkWriteOptions = [])
+    {
+        foreach ($this->bulkWriteBuilderFactory->getBulkWriteBuilders() as $builder) {
+            if ($builder->count()) {
+                $builder->flush($bulkWriteOptions);
+            }
+        }
     }
 
     /**
