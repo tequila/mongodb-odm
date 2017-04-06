@@ -130,11 +130,6 @@ class DocumentManager
      */
     private function getCollectionOptionsHash(array $options)
     {
-        $options = array_filter($options, function ($option) {
-            // All valid Collection options are BSON serializable
-            return $option instanceof Serializable;
-        });
-
         ksort($options);
         $str = '';
         foreach ($options as $option) {
