@@ -72,7 +72,11 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
      */
     public function bsonSerialize()
     {
-        return ['_id' => $this->id];
+        if ($this->id) {
+            return ['_id' => $this->id];
+        }
+
+        return [];
     }
 
     /**
@@ -82,7 +86,7 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
     {
         $this->id = $data['_id'];
     }
-    
+
     public function __debugInfo()
     {
         $reflection = new \ReflectionObject($this);
