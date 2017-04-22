@@ -92,8 +92,11 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
         $reflection = new \ReflectionObject($this);
         $debugInfo = [];
         foreach ($reflection->getProperties() as $property) {
-            $debugInfo[$property->getName()] = $property->getValue();
+            $property->setAccessible(true);
+            $debugInfo[$property->getName()] = $property->getValue($this);
         }
+
+        return $debugInfo;
     }
 
     /**
