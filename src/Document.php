@@ -68,6 +68,31 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
     }
 
     /**
+     * @inheritdoc
+     */
+    public function bsonSerialize()
+    {
+        return ['_id' => $this->id];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function bsonUnserialize(array $data)
+    {
+        $this->id = $data['_id'];
+    }
+    
+    public function __debugInfo()
+    {
+        $reflection = new \ReflectionObject($this);
+        $debugInfo = [];
+        foreach ($reflection->getProperties() as $property) {
+            $debugInfo[$property->getName()] = $property->getValue();
+        }
+    }
+
+    /**
      * @return BulkWriteBuilder
      */
     private function getBulkWriteBuilder()
