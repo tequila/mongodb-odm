@@ -22,6 +22,26 @@ class DocumentRepository
     }
 
     /**
+     * @param array $filter
+     * @param array $options
+     * @return \Tequila\MongoDB\QueryCursor
+     */
+    public function findAll(array $filter = [], array $options = [])
+    {
+        return $this->collection->find($filter, $options);
+    }
+
+    /**
+     * @param array $filter
+     * @param array $options
+     * @return array|\MongoDB\BSON\Unserializable|null
+     */
+    public function findOne(array $filter = [], array $options = [])
+    {
+        return $this->collection->findOne($filter, $options);
+    }
+
+    /**
      * @param ObjectID|mixed $id
      * @param array $options
      * @return array|\MongoDB\BSON\Unserializable|null
@@ -33,7 +53,7 @@ class DocumentRepository
 
     /**
      * @param array $ids
-     * @return \Tequila\MongoDB\Cursor
+     * @return \Tequila\MongoDB\QueryCursor
      */
     public function findAllByIds(array $ids)
     {
