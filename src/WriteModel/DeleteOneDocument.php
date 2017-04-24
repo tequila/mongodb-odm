@@ -13,7 +13,7 @@ class DeleteOneDocument extends DocumentAwareWriteModel
     use CollationTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function writeToBulk(BulkWrite $bulk)
     {

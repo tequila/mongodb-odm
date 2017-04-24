@@ -68,7 +68,7 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function bsonSerialize()
     {
@@ -80,7 +80,7 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function bsonUnserialize(array $data)
     {
@@ -101,9 +101,9 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
 
     protected function set($field, $value)
     {
-      if ($this->getId()) {
-        $this->update()->set($field, $value);
-      }      
+        if ($this->getId()) {
+            $this->update()->set($field, $value);
+        }
     }
 
     /**

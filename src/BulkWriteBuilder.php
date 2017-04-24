@@ -49,7 +49,7 @@ class BulkWriteBuilder
 
     /**
      * @param Manager $manager
-     * @param string $namespace
+     * @param string  $namespace
      */
     public function __construct(Manager $manager, $namespace)
     {
@@ -66,9 +66,10 @@ class BulkWriteBuilder
     }
 
     /**
-     * Flushes bulk write to MongoDB
+     * Flushes bulk write to MongoDB.
      *
      * @param array $bulkWriteOptions
+     *
      * @return \Tequila\MongoDB\WriteResult
      */
     public function flush(array $bulkWriteOptions = [])
@@ -84,7 +85,7 @@ class BulkWriteBuilder
                     sprintf(
                         'Option "writeConcern" is expected to be "%s", "%s" given.',
                         WriteConcern::class,
-                        getType($bulkWriteOptions['writeConcern'])
+                        \Tequila\MongoDB\getType($bulkWriteOptions['writeConcern'])
                     )
                 );
             }
@@ -103,6 +104,7 @@ class BulkWriteBuilder
     /**
      * @param array $filter
      * @param array $options
+     *
      * @return $this
      */
     public function deleteMany(array $filter, array $options = [])
@@ -115,6 +117,7 @@ class BulkWriteBuilder
     /**
      * @param array $filter
      * @param array $options
+     *
      * @return $this
      */
     public function deleteOne(array $filter, array $options = [])
@@ -126,6 +129,7 @@ class BulkWriteBuilder
 
     /**
      * @param array $documents
+     *
      * @return $this
      */
     public function insertMany(array $documents)
@@ -137,6 +141,7 @@ class BulkWriteBuilder
 
     /**
      * @param $document
+     *
      * @return $this
      */
     public function insertOne($document)
@@ -150,6 +155,7 @@ class BulkWriteBuilder
      * @param array $filter
      * @param array $update
      * @param array $options
+     *
      * @return $this
      */
     public function updateMany(array $filter, array $update, array $options = [])
@@ -163,6 +169,7 @@ class BulkWriteBuilder
      * @param array $filter
      * @param array $update
      * @param array $options
+     *
      * @return $this
      */
     public function updateOne(array $filter, array $update, array $options = [])
@@ -173,9 +180,10 @@ class BulkWriteBuilder
     }
 
     /**
-     * @param array $filter
+     * @param array        $filter
      * @param array|object $replacement
-     * @param array $options
+     * @param array        $options
+     *
      * @return $this
      */
     public function replaceOne(array $filter, $replacement, array $options = [])
@@ -187,6 +195,7 @@ class BulkWriteBuilder
 
     /**
      * @param DocumentInterface $document
+     *
      * @return DeleteOneDocument
      */
     public function deleteDocument(DocumentInterface $document)
@@ -194,7 +203,7 @@ class BulkWriteBuilder
         if (null === $id = $document->getId()) {
             throw new InvalidArgumentException('Attempt to delete a new document.');
         }
-        $id = (string)$id;
+        $id = (string) $id;
 
         if (!array_key_exists($id, $this->writeModels)) {
             $this->writeModels[$id] = new DeleteOneDocument($document);
@@ -219,6 +228,7 @@ class BulkWriteBuilder
 
     /**
      * @param DocumentInterface $document
+     *
      * @return UpdateOneDocument
      */
     public function updateDocument(DocumentInterface $document)
@@ -226,7 +236,7 @@ class BulkWriteBuilder
         if (null === $id = $document->getId()) {
             throw new InvalidArgumentException('Attempt to update a new document.');
         }
-        $id = (string)$id;
+        $id = (string) $id;
 
         if (!array_key_exists($id, $this->writeModels)) {
             $this->writeModels[$id] = new UpdateOneDocument($document);
@@ -239,6 +249,7 @@ class BulkWriteBuilder
 
     /**
      * @param DocumentInterface $document
+     *
      * @return ReplaceOneDocument
      */
     public function replaceDocument(DocumentInterface $document)
@@ -246,7 +257,7 @@ class BulkWriteBuilder
         if (null === $id = $document->getId()) {
             throw new InvalidArgumentException('Attempt to replace a new document.');
         }
-        $id = (string)$id;
+        $id = (string) $id;
 
         if (!array_key_exists($id, $this->writeModels)) {
             $this->writeModels[$id] = new ReplaceOneDocument($document);
@@ -259,12 +270,12 @@ class BulkWriteBuilder
 
     /**
      * @param DocumentInterface $document
-     * @param string $operation - "delete", "update" or "replace"
+     * @param string            $operation - "delete", "update" or "replace"
      */
     private function ensureOneOperationPerDocument(DocumentInterface $document, $operation)
     {
         $firstOperation = self::getOperationByModelClass(
-            get_class($this->writeModels[(string)$document->getId()])
+            get_class($this->writeModels[(string) $document->getId()])
         );
 
         if ($firstOperation !== $operation) {
@@ -280,6 +291,7 @@ class BulkWriteBuilder
 
     /**
      * @param $builderClass
+     *
      * @return string
      */
     private static function getOperationByModelClass($builderClass)

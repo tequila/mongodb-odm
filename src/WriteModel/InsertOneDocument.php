@@ -7,7 +7,7 @@ use Tequila\MongoDB\BulkWrite;
 class InsertOneDocument extends DocumentAwareWriteModel
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function writeToBulk(BulkWrite $bulk)
     {

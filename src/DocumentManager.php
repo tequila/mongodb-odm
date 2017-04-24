@@ -35,10 +35,10 @@ class DocumentManager
     private $metadataFactory;
 
     /**
-     * @param Database $database
-     * @param BulkWriteBuilderFactory $bulkWriteBuilderFactory
+     * @param Database                           $database
+     * @param BulkWriteBuilderFactory            $bulkWriteBuilderFactory
      * @param DocumentRepositoryFactoryInterface $repositoryFactory
-     * @param DocumentMetadataFactoryInterface $metadataFactory
+     * @param DocumentMetadataFactoryInterface   $metadataFactory
      */
     public function __construct(
         Database $database,
@@ -76,24 +76,26 @@ class DocumentManager
 
     /**
      * @param string $documentClass
+     *
      * @return BulkWriteBuilder
      */
     public function getBulkWriteBuilder($documentClass)
     {
         $metadata = $this->metadataFactory->getDocumentMetadata($documentClass);
-        $namespace = $this->database->getDatabaseName() . '.' . $metadata->getCollectionName();
+        $namespace = $this->database->getDatabaseName().'.'.$metadata->getCollectionName();
 
         return $this->bulkWriteBuilderFactory->getBulkWriteBuilder($namespace);
     }
 
     /**
      * @param string $collectionName
-     * @param array $options
+     * @param array  $options
+     *
      * @return Collection
      */
     public function getCollection($collectionName, array $options = [])
     {
-        $cacheKey = $collectionName . $this->getCollectionOptionsHash($options);
+        $cacheKey = $collectionName.$this->getCollectionOptionsHash($options);
         if (!array_key_exists($cacheKey, $this->collectionsCache)) {
             $this->collectionsCache[$cacheKey] = $this->database->selectCollection(
                 $collectionName,
@@ -106,6 +108,7 @@ class DocumentManager
 
     /**
      * @param string $documentClass
+     *
      * @return Collection
      */
     public function getCollectionByDocumentClass($documentClass)
@@ -117,6 +120,7 @@ class DocumentManager
 
     /**
      * @param string $documentClass
+     *
      * @return DocumentRepository
      */
     public function getRepository($documentClass)
@@ -126,6 +130,7 @@ class DocumentManager
 
     /**
      * @param array $options
+     *
      * @return string
      */
     private function getCollectionOptionsHash(array $options)
@@ -137,7 +142,7 @@ class DocumentManager
                 // All valid Collection options are BSON serializable
                 continue;
             }
-            $str = $str . var_export($option->bsonSerialize(), true);
+            $str .= var_export($option->bsonSerialize(), true);
         }
 
         return md5($str);

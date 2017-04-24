@@ -1,4 +1,5 @@
 # Tequila MongoDB ODM
+
 A simple and powerful MongoDB ODM for PHP. 
 The ODM is written with slogan "Don't learn ODM, just learn MongoDB".
 It means that the main goal of this ODM is to create a thin abstraction layer,
