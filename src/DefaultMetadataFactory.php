@@ -12,7 +12,7 @@ class DefaultMetadataFactory implements DocumentMetadataFactoryInterface
     private $metadataCache = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDocumentMetadata($documentClass)
     {

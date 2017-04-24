@@ -15,7 +15,7 @@ class ReplaceOneDocument extends DocumentAwareWriteModel
     use UpsertTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function writeToBulk(BulkWrite $bulk)
     {

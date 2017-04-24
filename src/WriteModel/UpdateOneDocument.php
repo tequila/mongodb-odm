@@ -20,7 +20,7 @@ class UpdateOneDocument extends DocumentAwareWriteModel
     private $update = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function writeToBulk(BulkWrite $bulk)
     {
@@ -29,7 +29,8 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
-     * @param array $values
+     * @param array  $values
+     *
      * @return $this
      */
     public function addAllToSet($field, array $values)
@@ -41,7 +42,8 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
-     * @param mixed $value
+     * @param mixed  $value
+     *
      * @return $this
      */
     public function addToSet($field, $value)
@@ -53,6 +55,7 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
+     *
      * @return $this
      */
     public function popFirst($field)
@@ -64,6 +67,7 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
+     *
      * @return $this
      */
     public function popLast($field)
@@ -75,7 +79,8 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
-     * @param array $values
+     * @param array  $values
+     *
      * @return $this
      */
     public function pullAll($field, array $values)
@@ -86,8 +91,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
     }
 
     /**
-     * @param string $field
+     * @param string      $field
      * @param array|mixed $condition - a condition to specify values to delete, or a value to delete
+     *
      * @return $this
      */
     public function pull($field, $condition)
@@ -99,7 +105,7 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function push($field, $value)
     {
@@ -108,7 +114,8 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
-     * @param array $values
+     * @param array  $values
+     *
      * @return $this
      */
     public function pushAll($field, array $values)
@@ -135,8 +142,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
     }
 
     /**
-     * @param string $field
+     * @param string    $field
      * @param int|float $value
+     *
      * @return $this
      */
     public function increment($field, $value)
@@ -147,8 +155,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
     }
 
     /**
-     * @param string $field
+     * @param string    $field
      * @param int|float $value
+     *
      * @return $this
      */
     public function multiply($field, $value)
@@ -159,8 +168,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
     }
 
     /**
-     * @param string $field
+     * @param string    $field
      * @param int|float $value
+     *
      * @return $this
      */
     public function min($field, $value)
@@ -171,8 +181,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
     }
 
     /**
-     * @param string $field
+     * @param string    $field
      * @param int|float $value
+     *
      * @return $this
      */
     public function max($field, $value)
@@ -184,7 +195,8 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
-     * @param mixed $value
+     * @param mixed  $value
+     *
      * @return $this
      */
     public function setOnInsert($field, $value)
@@ -196,7 +208,8 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
-     * @param mixed $value
+     * @param mixed  $value
+     *
      * @return $this
      */
     public function set($field, $value)
@@ -208,6 +221,7 @@ class UpdateOneDocument extends DocumentAwareWriteModel
 
     /**
      * @param string $field
+     *
      * @return $this
      */
     public function unsetField($field)

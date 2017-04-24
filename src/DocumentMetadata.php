@@ -21,12 +21,12 @@ class DocumentMetadata
 
     /**
      * @param string $collectionName
-     * @param array $collectionOptions
+     * @param array  $collectionOptions
      * @param string $repositoryClass
      */
     public function __construct($collectionName, array $collectionOptions = [], $repositoryClass = null)
     {
-        $this->collectionName = (string)$collectionName;
+        $this->collectionName = (string) $collectionName;
         $this->collectionOptions = $collectionOptions;
     }
 
@@ -59,6 +59,6 @@ class DocumentMetadata
      */
     public function setRepositoryClass($repositoryClass)
     {
-        $this->repositoryClass = (string)$repositoryClass;
+        $this->repositoryClass = (string) $repositoryClass;
     }
 }

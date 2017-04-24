@@ -26,6 +26,7 @@ class BulkWriteBuilderFactory
 
     /**
      * @param string $namespace
+     *
      * @return BulkWriteBuilder
      */
     public function getBulkWriteBuilder($namespace)

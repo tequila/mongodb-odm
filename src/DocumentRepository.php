@@ -24,6 +24,7 @@ class DocumentRepository
     /**
      * @param array $filter
      * @param array $options
+     *
      * @return \Tequila\MongoDB\QueryCursor
      */
     public function findAll(array $filter = [], array $options = [])
@@ -34,6 +35,7 @@ class DocumentRepository
     /**
      * @param array $filter
      * @param array $options
+     *
      * @return array|\MongoDB\BSON\Unserializable|null
      */
     public function findOne(array $filter = [], array $options = [])
@@ -43,7 +45,8 @@ class DocumentRepository
 
     /**
      * @param ObjectID|mixed $id
-     * @param array $options
+     * @param array          $options
+     *
      * @return array|\MongoDB\BSON\Unserializable|null
      */
     public function findOneById($id, array $options = [])
@@ -53,6 +56,7 @@ class DocumentRepository
 
     /**
      * @param array $ids
+     *
      * @return \Tequila\MongoDB\QueryCursor
      */
     public function findAllByIds(array $ids)

@@ -6,6 +6,7 @@ trait CollationTrait
 {
     /**
      * @param array|object $collation
+     *
      * @return $this
      */
     public function collation($collation)

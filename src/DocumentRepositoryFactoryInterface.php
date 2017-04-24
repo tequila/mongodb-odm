@@ -6,7 +6,8 @@ interface DocumentRepositoryFactoryInterface
 {
     /**
      * @param DocumentManager $documentManager
-     * @param string $documentClass
+     * @param string          $documentClass
+     *
      * @return DocumentRepository
      */
     public function getDocumentRepository(DocumentManager $documentManager, $documentClass);

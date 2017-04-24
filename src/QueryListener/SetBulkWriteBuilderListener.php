@@ -24,7 +24,7 @@ class SetBulkWriteBuilderListener implements QueryListenerInterface, DocumentLis
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function onQueryExecuted($namespace, $filter, array $options, QueryCursor $cursor)
     {
@@ -32,7 +32,7 @@ class SetBulkWriteBuilderListener implements QueryListenerInterface, DocumentLis
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function onDocument(QueryCursor $cursor, $document)
     {

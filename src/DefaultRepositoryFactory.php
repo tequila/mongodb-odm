@@ -23,7 +23,7 @@ class DefaultRepositoryFactory implements DocumentRepositoryFactoryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDocumentRepository(DocumentManager $documentManager, $documentClass)
     {
