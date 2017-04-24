@@ -99,6 +99,13 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
         return $debugInfo;
     }
 
+    protected function set($field, $value)
+    {
+      if ($this->getId()) {
+        $this->update()->set($field, $value);
+      }      
+    }
+
     /**
      * @return BulkWriteBuilder
      */
