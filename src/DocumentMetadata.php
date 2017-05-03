@@ -47,8 +47,9 @@ class DocumentMetadata
     /**
      * @param string $propertyName
      * @param string $serializerClass
-     * @param array $serializerOptions
+     * @param array  $serializerOptions
      * @param string $dbFieldName
+     *
      * @return $this
      */
     public function addField($propertyName, $serializerClass, array $serializerOptions = [], $dbFieldName = null)
@@ -115,6 +116,7 @@ class DocumentMetadata
 
     /**
      * @param array $collectionOptions
+     *
      * @return $this
      */
     public function setCollectionOptions(array $collectionOptions)
@@ -134,6 +136,7 @@ class DocumentMetadata
 
     /**
      * @param string $repositoryClass
+     *
      * @return $this
      */
     public function setRepositoryClass($repositoryClass)

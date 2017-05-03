@@ -26,10 +26,11 @@ class FieldMetadata
 
     /**
      * FieldMetadata constructor.
+     *
      * @param $propertyName
      * @param $serializerClass
      * @param array $serializerOptions
-     * @param null $dbFieldName
+     * @param null  $dbFieldName
      */
     public function __construct(
         $propertyName,

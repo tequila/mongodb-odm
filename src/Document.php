@@ -20,11 +20,6 @@ abstract class Document implements DocumentInterface, Persistable, DocumentManag
     private $documentManager;
 
     /**
-     * @var array
-     */
-    private $data;
-
-    /**
      * @return WriteModel\DeleteOneDocument
      */
     public function delete()
@@ -91,10 +86,5 @@ abstract class Document implements DocumentInterface, Persistable, DocumentManag
         }
 
         return $this->documentManager;
-    }
-
-    private function getMetadata()
-    {
-        return $this->getDocumentManager()->getMetadata(get_class($this));
     }
 }
