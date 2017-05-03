@@ -28,40 +28,30 @@ class DefaultMetadataFactory implements DocumentMetadataFactoryInterface
                 );
             }
 
-            if (!$reflection->hasMethod('getMetadata')) {
+            if (!$reflection->hasMethod('loadDocumentMetadata')) {
                 throw new LogicException(
                     sprintf(
-                        '%s requires document class %s to have method "getMetadata()".',
+                        '%s requires document class %s to have method "loadDocumentMetadata()".',
                         __CLASS__,
                         $documentClass
                     )
                 );
             }
 
-            $reflectionMethod = $reflection->getMethod('getMetadata');
+            $reflectionMethod = $reflection->getMethod('loadDocumentMetadata');
 
             if (!$reflectionMethod->isPublic() || !$reflectionMethod->isStatic()) {
                 throw new LogicException(
                     sprintf(
-                        '%s requires document class %s method "getMetadata()" to be public and static.',
+                        '%s requires document class %s method "loadDocumentMetadata" to be public and static.',
                         __CLASS__,
                         $documentClass
                     )
                 );
             }
 
-            $metadata = call_user_func([$documentClass, 'getMetadata']);
-            if (!$metadata instanceof DocumentMetadata) {
-                throw new LogicException(
-                    sprintf(
-                        'Method %s::getMetadata() must return %s instance, but returns %s.',
-                        $documentClass,
-                        DocumentMetadata::class,
-                        \Tequila\MongoDB\getType($metadata)
-                    )
-                );
-            }
-
+            $metadata = new DocumentMetadata($documentClass);
+            call_user_func([$documentClass, 'loadDocumentMetadata'], $metadata);
             $this->metadataCache[$documentClass] = $metadata;
         }
 
