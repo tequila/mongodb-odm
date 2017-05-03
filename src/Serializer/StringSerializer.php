@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Serializer;
 
-class StringSerializer extends Serializer
+class StringSerializer implements SerializerInterface
 {
     public function serialize($value, array $options = [])
     {

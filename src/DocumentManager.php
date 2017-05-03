@@ -54,12 +54,12 @@ class DocumentManager
 
     /**
      * @param DocumentInterface $document
+     *
+     * @return WriteModel\DeleteOneDocument
      */
-    public function addToBulk(DocumentInterface $document)
+    public function deleteDocument(DocumentInterface $document)
     {
-        if (!$document->getId()) {
-            $this->getBulkWriteBuilder(get_class($document))->insertDocument($document);
-        }
+        return $this->getBulkWriteBuilder(get_class($document))->deleteDocument($document);
     }
 
     /**
@@ -119,6 +119,16 @@ class DocumentManager
     }
 
     /**
+     * @param $documentClass
+     *
+     * @return DocumentMetadata
+     */
+    public function getMetadata($documentClass)
+    {
+        return $this->metadataFactory->getDocumentMetadata($documentClass);
+    }
+
+    /**
      * @param string $documentClass
      *
      * @return DocumentRepository
@@ -126,6 +136,50 @@ class DocumentManager
     public function getRepository($documentClass)
     {
         return $this->repositoryFactory->getDocumentRepository($this, $documentClass);
+    }
+
+    /**
+     * @param DocumentInterface $document
+     */
+    public function insertDocument(DocumentInterface $document)
+    {
+        $this->getBulkWriteBuilder(get_class($document))->insertDocument($document);
+    }
+
+    /**
+     * @param DocumentInterface $document
+     */
+    public function persist(DocumentInterface $document)
+    {
+        if (!$document->getId()) {
+            $this->insertDocument($document);
+        } else {
+            $this->getBulkWriteBuilder(get_class($document))->replaceOne(
+                ['_id' => $document->getId()],
+                $document,
+                ['upsert' => true]
+            );
+        }
+    }
+
+    /**
+     * @param DocumentInterface $document
+     *
+     * @return WriteModel\ReplaceOneDocument
+     */
+    public function replaceDocument(DocumentInterface $document)
+    {
+        return $this->getBulkWriteBuilder(get_class($document))->replaceDocument($document);
+    }
+
+    /**
+     * @param DocumentInterface $document
+     *
+     * @return WriteModel\UpdateOneDocument
+     */
+    public function updateDocument(DocumentInterface $document)
+    {
+        return $this->getBulkWriteBuilder(get_class($document))->updateDocument($document);
     }
 
     /**

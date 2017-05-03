@@ -2,13 +2,11 @@
 
 namespace Tequila\MongoDB\ODM\QueryListener;
 
-use Tequila\MongoDB\DocumentInterface;
 use Tequila\MongoDB\DocumentListenerInterface;
 use Tequila\MongoDB\ODM\DocumentManagerAwareInterface;
 use Tequila\MongoDB\ODM\DocumentManager;
 use Tequila\MongoDB\QueryCursor;
 use Tequila\MongoDB\QueryListenerInterface;
-use stdClass;
 
 class SetDocumentManagerListener implements QueryListenerInterface, DocumentListenerInterface
 {
@@ -38,12 +36,6 @@ class SetDocumentManagerListener implements QueryListenerInterface, DocumentList
      */
     public function onDocument(QueryCursor $cursor, $document)
     {
-        if (!is_object($document) || $document instanceof stdClass) {
-            return;
-        }
-        $documentClass = get_class($document);
-        $metadata = $this->documentManager->getMetadata($document);
-
         if ($document instanceof DocumentManagerAwareInterface) {
             $document->setDocumentManager($this->documentManager);
         }

@@ -3,40 +3,38 @@
 namespace Tequila\MongoDB\ODM\Serializer;
 
 use Tequila\MongoDB\ODM\DocumentMetadataFactoryInterface;
-use Tequila\OptionsResolver\OptionsResolver;
+use Tequila\MongoDB\ODM\SerializerFactory;
 
-class DocumentSerializer extends Serializer
+class DocumentSerializer implements SerializerInterface
 {
-    /**
-     * @var OptionsResolver
-     */
-    private static $resolver;
-
     /**
      * @var \Closure
      */
     private $serializerClosure;
 
-    public function __construct()
+    public function __construct(SerializerFactory $serializerFactory, DocumentMetadataFactoryInterface $metadataFactory)
     {
-        $this->serializerClosure = function (
-            DocumentMetadataFactoryInterface $metadataFactory,
-            SerializerFactory $serializerFactory,
-            $documentClass,
-            array $options
-        ) {
+        $documentSerializer = $this;
+        $this->serializerClosure = function ($documentClass) use ($serializerFactory, $metadataFactory, $documentSerializer) {
             $data = [];
             $metadata = $metadataFactory->getDocumentMetadata($documentClass);
 
             foreach ($metadata->getFieldsMetadata() as $fieldMetadata) {
-                $serializer = $serializerFactory->getSerializer($fieldMetadata->getSerializerClass());
-                $serializerOptions = $fieldMetadata->getSerializerOptions();
-                $serializerOptions += $options;
+                $fieldValue = $this->{$fieldMetadata->getPropertyName()};
+                if (null !== $fieldValue) {
+                    $serializerClass = $fieldMetadata->getSerializerClass();
+                    $serializer = DocumentSerializer::class === $serializerClass
+                        ? $documentSerializer
+                        : $serializerFactory->getSerializer($serializerClass);
+                    $serializerOptions = $fieldMetadata->getSerializerOptions();
 
-                $data[$fieldMetadata->getDbFieldName()] = $serializer->serialize(
-                    $this->{$fieldMetadata->getPropertyName()},
-                    $serializerOptions
-                );
+                    $fieldValue = $serializer->serialize(
+                        $fieldValue,
+                        $serializerOptions
+                    );
+                }
+
+                $data[$fieldMetadata->getDbFieldName()] = $fieldValue;
             }
 
             return $data;
@@ -45,38 +43,11 @@ class DocumentSerializer extends Serializer
 
     public function serialize($document, array $options = [])
     {
-        $options = self::resolveOptions($options);
         $closure = $this->serializerClosure;
 
         return $closure->call(
             $document,
-            $options['metadataFactory'],
-            $this->factory,
-            $options['documentClass'],
-            $options
+            $options['documentClass']
         );
-    }
-
-    /**
-     * @param array $options
-     * @return array
-     */
-    private static function resolveOptions(array $options)
-    {
-        if (!self::$resolver) {
-            $resolver = new OptionsResolver();
-            $resolver->setDefined([
-                'documentClass',
-                'metadataFactory',
-            ]);
-
-            $resolver
-                ->setAllowedTypes('documentClass', 'string')
-                ->setAllowedTypes('metadataFactory', DocumentMetadataFactoryInterface::class);
-
-            self::$resolver = $resolver;
-        }
-
-        return self::$resolver->resolve($options);
     }
 }
