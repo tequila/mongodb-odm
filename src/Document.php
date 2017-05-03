@@ -7,7 +7,7 @@ use MongoDB\BSON\Persistable;
 use Tequila\MongoDB\DocumentInterface;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 
-abstract class Document implements DocumentInterface, Persistable, BulkWriteBuilderAwareInterface
+abstract class Document implements DocumentInterface, Persistable, DocumentManagerAwareInterface
 {
     /**
      * @var ObjectID|null|mixed
@@ -15,16 +15,21 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
     protected $id;
 
     /**
-     * @var BulkWriteBuilder
+     * @var DocumentManager
      */
-    private $bulkWriteBuilder;
+    private $documentManager;
 
     /**
-     * @return WriteModel\UpdateOneDocument
+     * @var array
      */
-    public function update()
+    private $data;
+
+    /**
+     * @return WriteModel\DeleteOneDocument
+     */
+    public function delete()
     {
-        return $this->getBulkWriteBuilder()->updateDocument($this);
+        return $this->getDocumentManager()->deleteDocument($this);
     }
 
     /**
@@ -32,23 +37,23 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
      */
     public function replace()
     {
-        return $this->getBulkWriteBuilder()->replaceDocument($this);
+        return $this->getDocumentManager()->replaceDocument($this);
     }
 
     /**
-     * @return WriteModel\DeleteOneDocument
+     * @return WriteModel\UpdateOneDocument
      */
-    public function delete()
+    public function update()
     {
-        return $this->getBulkWriteBuilder()->deleteDocument($this);
+        return $this->getDocumentManager()->updateDocument($this);
     }
 
     /**
-     * @param BulkWriteBuilder $builder
+     * @param DocumentManager $documentManager
      */
-    final public function setBulkWriteBuilder(BulkWriteBuilder $builder)
+    final public function setDocumentManager(DocumentManager $documentManager)
     {
-        $this->bulkWriteBuilder = $builder;
+        $this->documentManager = $documentManager;
     }
 
     /**
@@ -67,38 +72,6 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
         $this->id = $id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function bsonSerialize()
-    {
-        if ($this->id) {
-            return ['_id' => $this->id];
-        }
-
-        return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function bsonUnserialize(array $data)
-    {
-        $this->id = $data['_id'];
-    }
-
-    public function __debugInfo()
-    {
-        $reflection = new \ReflectionObject($this);
-        $debugInfo = [];
-        foreach ($reflection->getProperties() as $property) {
-            $property->setAccessible(true);
-            $debugInfo[$property->getName()] = $property->getValue($this);
-        }
-
-        return $debugInfo;
-    }
-
     protected function set($field, $value)
     {
         if ($this->getId()) {
@@ -107,16 +80,21 @@ abstract class Document implements DocumentInterface, Persistable, BulkWriteBuil
     }
 
     /**
-     * @return BulkWriteBuilder
+     * @return DocumentManager
      */
-    private function getBulkWriteBuilder()
+    private function getDocumentManager()
     {
-        if (null === $this->bulkWriteBuilder) {
+        if (null === $this->documentManager) {
             throw new LogicException(
-                'BulkWriteBuilder was not set to this document. Maybe document is new?'
+                'DocumentManager was not set to this document. Maybe document is new?'
             );
         }
 
-        return $this->bulkWriteBuilder;
+        return $this->documentManager;
+    }
+
+    private function getMetadata()
+    {
+        return $this->getDocumentManager()->getMetadata(get_class($this));
     }
 }
