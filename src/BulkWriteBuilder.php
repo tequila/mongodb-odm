@@ -4,14 +4,9 @@ namespace Tequila\MongoDB\ODM;
 
 use MongoDB\Driver\WriteConcern;
 use Tequila\MongoDB\BulkWrite;
-use Tequila\MongoDB\DocumentInterface;
 use Tequila\MongoDB\Manager;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Exception\LogicException;
-use Tequila\MongoDB\ODM\WriteModel\DeleteOneDocument;
-use Tequila\MongoDB\ODM\WriteModel\InsertOneDocument;
-use Tequila\MongoDB\ODM\WriteModel\ReplaceOneDocument;
-use Tequila\MongoDB\ODM\WriteModel\UpdateOneDocument;
 use Tequila\MongoDB\Write\Model\DeleteMany;
 use Tequila\MongoDB\Write\Model\DeleteOne;
 use Tequila\MongoDB\Write\Model\InsertMany;
@@ -23,15 +18,6 @@ use Tequila\MongoDB\WriteModelInterface;
 
 class BulkWriteBuilder
 {
-    /**
-     * @var array
-     */
-    private static $modelClassToOperationMap = [
-        DeleteOneDocument::class => 'delete',
-        UpdateOneDocument::class => 'update',
-        ReplaceOneDocument::class => 'replace',
-    ];
-
     /**
      * @var Manager
      */
@@ -55,6 +41,14 @@ class BulkWriteBuilder
     {
         $this->manager = $manager;
         $this->namespace = $namespace;
+    }
+
+    /**
+     * @param WriteModelInterface $writeModel
+     */
+    public function add(WriteModelInterface $writeModel)
+    {
+        $this->writeModels[] = $writeModel;
     }
 
     /**
@@ -191,117 +185,5 @@ class BulkWriteBuilder
         $this->writeModels[] = new ReplaceOne($filter, $replacement, $options);
 
         return $this;
-    }
-
-    /**
-     * @param DocumentInterface $document
-     *
-     * @return DeleteOneDocument
-     */
-    public function deleteDocument(DocumentInterface $document)
-    {
-        if (null === $id = $document->getId()) {
-            throw new InvalidArgumentException('Attempt to delete a new document.');
-        }
-        $id = (string) $id;
-
-        if (!array_key_exists($id, $this->writeModels)) {
-            $this->writeModels[$id] = new DeleteOneDocument($document);
-        } else {
-            $this->ensureOneOperationPerDocument($document, 'delete');
-        }
-
-        return $this->writeModels[$id];
-    }
-
-    /**
-     * @param DocumentInterface $document
-     */
-    public function insertDocument(DocumentInterface $document)
-    {
-        $hash = \spl_object_hash($document);
-        if (array_key_exists($hash, $this->writeModels)) {
-            throw new LogicException('Trying to insert the same document twice.');
-        }
-        $this->writeModels[$hash] = new InsertOneDocument($document);
-    }
-
-    /**
-     * @param DocumentInterface $document
-     *
-     * @return UpdateOneDocument
-     */
-    public function updateDocument(DocumentInterface $document)
-    {
-        if (null === $id = $document->getId()) {
-            throw new InvalidArgumentException('Attempt to update a new document.');
-        }
-        $id = (string) $id;
-
-        if (!array_key_exists($id, $this->writeModels)) {
-            $this->writeModels[$id] = new UpdateOneDocument($document);
-        } else {
-            $this->ensureOneOperationPerDocument($document, 'update');
-        }
-
-        return $this->writeModels[$id];
-    }
-
-    /**
-     * @param DocumentInterface $document
-     *
-     * @return ReplaceOneDocument
-     */
-    public function replaceDocument(DocumentInterface $document)
-    {
-        if (null === $id = $document->getId()) {
-            throw new InvalidArgumentException('Attempt to replace a new document.');
-        }
-        $id = (string) $id;
-
-        if (!array_key_exists($id, $this->writeModels)) {
-            $this->writeModels[$id] = new ReplaceOneDocument($document);
-        } else {
-            $this->ensureOneOperationPerDocument($document, 'delete');
-        }
-
-        return $this->writeModels[$id];
-    }
-
-    /**
-     * @param DocumentInterface $document
-     * @param string            $operation - "delete", "update" or "replace"
-     */
-    private function ensureOneOperationPerDocument(DocumentInterface $document, $operation)
-    {
-        $firstOperation = self::getOperationByModelClass(
-            get_class($this->writeModels[(string) $document->getId()])
-        );
-
-        if ($firstOperation !== $operation) {
-            throw new LogicException(
-                sprintf(
-                    'Trying to %s and %s the same document in one request.',
-                    $firstOperation,
-                    $operation
-                )
-            );
-        }
-    }
-
-    /**
-     * @param $builderClass
-     *
-     * @return string
-     */
-    private static function getOperationByModelClass($builderClass)
-    {
-        if (isset(self::$modelClassToOperationMap[$builderClass])) {
-            return self::$modelClassToOperationMap[$builderClass];
-        }
-
-        throw new LogicException(
-            sprintf('Unknown write model builder class "%s".', $builderClass)
-        );
     }
 }

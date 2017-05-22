@@ -53,16 +53,6 @@ class DocumentManager
     }
 
     /**
-     * @param DocumentInterface $document
-     *
-     * @return WriteModel\DeleteOneDocument
-     */
-    public function deleteDocument(DocumentInterface $document)
-    {
-        return $this->getBulkWriteBuilder(get_class($document))->deleteDocument($document);
-    }
-
-    /**
      * @param array $bulkWriteOptions
      */
     public function flush(array $bulkWriteOptions = [])
@@ -160,26 +150,6 @@ class DocumentManager
                 ['upsert' => true]
             );
         }
-    }
-
-    /**
-     * @param DocumentInterface $document
-     *
-     * @return WriteModel\ReplaceOneDocument
-     */
-    public function replaceDocument(DocumentInterface $document)
-    {
-        return $this->getBulkWriteBuilder(get_class($document))->replaceDocument($document);
-    }
-
-    /**
-     * @param DocumentInterface $document
-     *
-     * @return WriteModel\UpdateOneDocument
-     */
-    public function updateDocument(DocumentInterface $document)
-    {
-        return $this->getBulkWriteBuilder(get_class($document))->updateDocument($document);
     }
 
     /**

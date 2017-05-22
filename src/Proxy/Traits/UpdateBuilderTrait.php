@@ -1,31 +1,18 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\WriteModel;
+namespace Tequila\MongoDB\ODM\Proxy\Traits;
 
-use Tequila\MongoDB\BulkWrite;
-use Tequila\MongoDB\ODM\WriteModel\Traits\CollationTrait;
-use Tequila\MongoDB\ODM\WriteModel\Traits\FilterAndOptionsTrait;
-use Tequila\MongoDB\ODM\WriteModel\Traits\UpsertTrait;
-use Tequila\MongoDB\Write\Model\UpdateOne;
-
-class UpdateOneDocument extends DocumentAwareWriteModel
+trait UpdateBuilderTrait
 {
-    use FilterAndOptionsTrait;
-    use CollationTrait;
-    use UpsertTrait;
+    /**
+     * @var array
+     */
+    private $mongoDbUpdate = [];
 
     /**
      * @var array
      */
-    private $update = [];
-
-    /**
-     * {@inheritdoc}
-     */
-    public function writeToBulk(BulkWrite $bulk)
-    {
-        (new UpdateOne($this->getFilter(), $this->update, $this->options))->writeToBulk($bulk);
-    }
+    private $mongoDbOptions = [];
 
     /**
      * @param string $field
@@ -33,7 +20,7 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function addAllToSet($field, array $values)
+    public function addAllToSet(string $field, array $values)
     {
         $this->addToSet($field, ['$each' => $values]);
 
@@ -46,9 +33,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function addToSet($field, $value)
+    public function addToSet(string $field, $value)
     {
-        $this->update['$addToSet'][$field] = $value;
+        $this->mongoDbUpdate['$addToSet'][$field] = $value;
 
         return $this;
     }
@@ -58,9 +45,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function popFirst($field)
+    public function popFirst(string $field)
     {
-        $this->update['$pop'][$field] = -1;
+        $this->mongoDbUpdate['$pop'][$field] = -1;
 
         return $this;
     }
@@ -70,9 +57,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function popLast($field)
+    public function popLast(string $field)
     {
-        $this->update['$pop'][$field] = 1;
+        $this->mongoDbUpdate['$pop'][$field] = 1;
 
         return $this;
     }
@@ -83,9 +70,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function pullAll($field, array $values)
+    public function pullAll(string $field, array $values)
     {
-        $this->update['$pullAll'][$field] = $values;
+        $this->mongoDbUpdate['$pullAll'][$field] = $values;
 
         return $this;
     }
@@ -96,9 +83,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function pull($field, $condition)
+    public function pull(string $field, $condition)
     {
-        $this->update['$pull'][$field] = $condition;
+        $this->mongoDbUpdate['$pull'][$field] = $condition;
 
         return $this;
     }
@@ -107,9 +94,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      * @param string $field
      * @param mixed  $value
      */
-    public function push($field, $value)
+    public function push(string $field, $value)
     {
-        $this->update['$push'][$field] = $value;
+        $this->mongoDbUpdate['$push'][$field] = $value;
     }
 
     /**
@@ -118,7 +105,7 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function pushAll($field, array $values)
+    public function pushAll(string $field, array $values)
     {
         $this->push($field, ['$each' => $values]);
 
@@ -128,17 +115,17 @@ class UpdateOneDocument extends DocumentAwareWriteModel
     /**
      * @param string $field
      */
-    public function currentDate($field)
+    public function currentDate(string $field)
     {
-        $this->update['$currentDate'][$field] = true;
+        $this->mongoDbUpdate['$currentDate'][$field] = true;
     }
 
     /**
      * @param string $field
      */
-    public function currentTimestamp($field)
+    public function currentTimestamp(string $field)
     {
-        $this->update['$currentDate'][$field] = ['$type' => 'timestamp'];
+        $this->mongoDbUpdate['$currentDate'][$field] = ['$type' => 'timestamp'];
     }
 
     /**
@@ -147,9 +134,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function increment($field, $value)
+    public function increment(string $field, $value)
     {
-        $this->update['$inc'][$field] = $value;
+        $this->mongoDbUpdate['$inc'][$field] = $value;
 
         return $this;
     }
@@ -160,9 +147,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function multiply($field, $value)
+    public function multiply(string $field, $value)
     {
-        $this->update['$mul'][$field] = $value;
+        $this->mongoDbUpdate['$mul'][$field] = $value;
 
         return $this;
     }
@@ -173,9 +160,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function min($field, $value)
+    public function min(string $field, $value)
     {
-        $this->update['$min'][$field] = $value;
+        $this->mongoDbUpdate['$min'][$field] = $value;
 
         return $this;
     }
@@ -186,22 +173,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function max($field, $value)
+    public function max(string $field, $value)
     {
-        $this->update['$max'][$field] = $value;
-
-        return $this;
-    }
-
-    /**
-     * @param string $field
-     * @param mixed  $value
-     *
-     * @return $this
-     */
-    public function setOnInsert($field, $value)
-    {
-        $this->update['$setOnInsert'][$field] = $value;
+        $this->mongoDbUpdate['$max'][$field] = $value;
 
         return $this;
     }
@@ -212,9 +186,22 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function set($field, $value)
+    public function setOnInsert(string $field, $value)
     {
-        $this->update['$set'][$field] = $value;
+        $this->mongoDbUpdate['$setOnInsert'][$field] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @param mixed  $value
+     *
+     * @return $this
+     */
+    public function set(string $field, $value)
+    {
+        $this->mongoDbUpdate['$set'][$field] = $value;
 
         return $this;
     }
@@ -224,9 +211,9 @@ class UpdateOneDocument extends DocumentAwareWriteModel
      *
      * @return $this
      */
-    public function unsetField($field)
+    public function unsetField(string $field)
     {
-        $this->update['$unset'][$field] = '';
+        $this->mongoDbUpdate['$unset'][$field] = '';
 
         return $this;
     }
