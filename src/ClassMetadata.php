@@ -2,19 +2,18 @@
 
 namespace Tequila\MongoDB\ODM;
 
-use Tequila\MongoDB\ODM\Exception\LogicException;
-use Tequila\MongoDB\ODM\Metadata\AbstractFieldMetadata;
-use Tequila\MongoDB\ODM\Metadata\BooleanField;
-use Tequila\MongoDB\ODM\Metadata\CollectionField;
-use Tequila\MongoDB\ODM\Metadata\DateField;
-use Tequila\MongoDB\ODM\Metadata\DocumentField;
-use Tequila\MongoDB\ODM\Metadata\FieldMetadataInterface;
-use Tequila\MongoDB\ODM\Metadata\FloatField;
-use Tequila\MongoDB\ODM\Metadata\IntegerField;
-use Tequila\MongoDB\ODM\Metadata\ObjectIdField;
-use Tequila\MongoDB\ODM\Metadata\StringField;
+use Tequila\MongoDB\ODM\FieldMetadata\AbstractFieldMetadata;
+use Tequila\MongoDB\ODM\FieldMetadata\BooleanField;
+use Tequila\MongoDB\ODM\FieldMetadata\CollectionField;
+use Tequila\MongoDB\ODM\FieldMetadata\DateField;
+use Tequila\MongoDB\ODM\FieldMetadata\DocumentField;
+use Tequila\MongoDB\ODM\FieldMetadata\FieldMetadataInterface;
+use Tequila\MongoDB\ODM\FieldMetadata\FloatField;
+use Tequila\MongoDB\ODM\FieldMetadata\IntegerField;
+use Tequila\MongoDB\ODM\FieldMetadata\ObjectIdField;
+use Tequila\MongoDB\ODM\FieldMetadata\StringField;
 
-class DocumentMetadata
+class ClassMetadata
 {
     /**
      * @var string
@@ -71,83 +70,74 @@ class DocumentMetadata
     /**
      * @param string      $propertyName
      * @param string|null $dbFieldName
-     * @param mixed|null  $defaultValue
      *
      * @return $this
      */
-    public function addBooleanField(string $propertyName, string $dbFieldName = null, $defaultValue = 'null')
+    public function addBooleanField(string $propertyName, string $dbFieldName = null)
     {
-        return $this->addField(new BooleanField($propertyName, $dbFieldName, $defaultValue));
+        return $this->addField(new BooleanField($propertyName, $dbFieldName));
     }
 
     /**
-     * @param string                 $propertyName
      * @param FieldMetadataInterface $itemMetadata
+     * @param string                 $propertyName
      * @param string|null            $dbFieldName
      *
      * @return $this
      */
     public function addCollectionField(
-        string $propertyName,
         FieldMetadataInterface $itemMetadata,
+        string $propertyName,
         string $dbFieldName = null
     ) {
-        return $this->addField(new CollectionField($propertyName, $itemMetadata, $dbFieldName));
-    }
-
-    /**
-     * @param string      $propertyName
-     * @param string|null $dbFieldName
-     * @param mixed|null  $defaultValue
-     *
-     * @return $this
-     */
-    public function addDateField(string $propertyName, string $dbFieldName = null, $defaultValue = 'null')
-    {
-        return $this->addField(new DateField($propertyName, $dbFieldName, $defaultValue));
-    }
-
-    /**
-     * @param string      $propertyName
-     * @param string      $documentClass
-     * @param string|null $dbFieldName
-     * @param mixed|null  $defaultValue
-     *
-     * @return $this
-     */
-    public function addDocumentField(
-        string $propertyName,
-        string $documentClass,
-        string $dbFieldName = null,
-        $defaultValue = 'null'
-    ) {
-        return $this->addField(new DocumentField($propertyName, $documentClass, $dbFieldName, $defaultValue));
-    }
-
-    /**
-     * @param string      $propertyName
-     * @param string|null $dbFieldName
-     * @param mixed|null  $defaultValue
-     *
-     * @return $this
-     */
-    public function addFloatField(string $propertyName, string $dbFieldName = null, $defaultValue = 'null')
-    {
-        return $this->addField(new FloatField($propertyName, $dbFieldName, $defaultValue));
+        return $this->addField(new CollectionField($itemMetadata, $propertyName, $dbFieldName));
     }
 
     /**
      * @param string $propertyName
-     * @param bool   $canBeGenerated
+     * @param string $dbFieldName
      *
      * @return $this
-     *
-     * @internal param null|string $dbFieldName
      */
-    public function addIdField(string $propertyName = 'id', bool $canBeGenerated = true)
+    public function addDateField(string $propertyName, string $dbFieldName = null)
+    {
+        return $this->addField(new DateField($propertyName, $dbFieldName));
+    }
+
+    /**
+     * @param string $documentClass
+     * @param string $propertyName
+     * @param string $dbFieldName
+     *
+     * @return $this
+     */
+    public function addDocumentField(string $documentClass, string $propertyName, string $dbFieldName = null)
+    {
+        return $this->addField(new DocumentField($documentClass, $propertyName, $dbFieldName));
+    }
+
+    /**
+     * @param string      $propertyName
+     * @param string|null $dbFieldName
+     *
+     * @return $this
+     */
+    public function addFloatField(string $propertyName, string $dbFieldName = null)
+    {
+        return $this->addField(new FloatField($propertyName, $dbFieldName));
+    }
+
+    /**
+     * @param string $propertyName
+     * @param string $dbFieldName
+     * @param bool   $generateIfNotSet
+     *
+     * @return $this
+     */
+    public function addObjectIdField(string $propertyName, string $dbFieldName = null, bool $generateIfNotSet = false)
     {
         return $this->addField(
-            new ObjectIdField($propertyName, $canBeGenerated, '_id')
+            new ObjectIdField($propertyName, $dbFieldName, $generateIfNotSet)
         );
     }
 
@@ -176,6 +166,46 @@ class DocumentMetadata
     }
 
     /**
+     * @param string $propertyName
+     *
+     * @return FieldMetadataInterface
+     */
+    public function getFieldByPropertyName(string $propertyName): ?FieldMetadataInterface
+    {
+        foreach ($this->fieldsMetadata as $fieldMetadata) {
+            if ($propertyName === $fieldMetadata->getPropertyName()) {
+                return $fieldMetadata;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $dbFieldName
+     *
+     * @return FieldMetadataInterface
+     */
+    public function getFieldByDbName(string $dbFieldName): ?FieldMetadataInterface
+    {
+        foreach ($this->fieldsMetadata as $fieldMetadata) {
+            if ($dbFieldName === $fieldMetadata->getDbFieldName()) {
+                return $fieldMetadata;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return FieldMetadataInterface
+     */
+    public function getPrimaryKeyField(): ?FieldMetadataInterface
+    {
+        return $this->getFieldByDbName('_id');
+    }
+
+    /**
      * @return string
      */
     public function getCollectionName(): string
@@ -195,6 +225,9 @@ class DocumentMetadata
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getDocumentClass(): string
     {
         return $this->documentClass;
@@ -206,22 +239,6 @@ class DocumentMetadata
     public function getFieldsMetadata(): array
     {
         return $this->fieldsMetadata;
-    }
-
-    /**
-     * @return FieldMetadataInterface
-     */
-    public function getIdFieldMetadata(): FieldMetadataInterface
-    {
-        foreach ($this->fieldsMetadata as $fieldMetadata) {
-            if ('_id' === $fieldMetadata->getDbFieldName()) {
-                return $fieldMetadata;
-            }
-        }
-
-        throw new LogicException(
-            sprintf('Metadata for document %s does not contain _id field', $this->documentClass)
-        );
     }
 
     /**

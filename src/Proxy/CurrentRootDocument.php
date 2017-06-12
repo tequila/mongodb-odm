@@ -5,7 +5,7 @@ namespace Tequila\MongoDB\ODM\Proxy;
 class CurrentRootDocument
 {
     /**
-     * @var RootDocumentInterface
+     * @var RootProxyInterface
      */
     public static $value;
 }

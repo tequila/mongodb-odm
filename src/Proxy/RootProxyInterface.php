@@ -2,9 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Proxy;
 
-interface RootDocumentInterface
+interface RootProxyInterface extends ProxyInterface
 {
     public function update(): UpdateBuilderInterface;
-
-    public function getRealClass(): string;
 }

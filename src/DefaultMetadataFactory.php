@@ -4,7 +4,7 @@ namespace Tequila\MongoDB\ODM;
 
 use Tequila\MongoDB\ODM\Exception\LogicException;
 
-class DefaultMetadataFactory implements DocumentMetadataFactoryInterface
+class DefaultMetadataFactory implements MetadataFactoryInterface
 {
     /**
      * @var array
@@ -14,7 +14,7 @@ class DefaultMetadataFactory implements DocumentMetadataFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getDocumentMetadata($documentClass)
+    public function getClassMetadata($documentClass): ClassMetadata
     {
         if (!array_key_exists($documentClass, $this->metadataCache)) {
             if (!class_exists($documentClass)) {
@@ -28,30 +28,33 @@ class DefaultMetadataFactory implements DocumentMetadataFactoryInterface
                 );
             }
 
-            if (!$reflection->hasMethod('loadDocumentMetadata')) {
+            if (!$reflection->hasMethod('loadClassMetadata')) {
                 throw new LogicException(
                     sprintf(
-                        '%s requires document class %s to have method "loadDocumentMetadata()".',
+                        '%s requires document class %s to have method "loadClassMetadata()".',
                         __CLASS__,
                         $documentClass
                     )
                 );
             }
 
-            $reflectionMethod = $reflection->getMethod('loadDocumentMetadata');
+            $reflectionMethod = $reflection->getMethod('loadClassMetadata');
 
             if (!$reflectionMethod->isPublic() || !$reflectionMethod->isStatic()) {
                 throw new LogicException(
                     sprintf(
-                        '%s requires document class %s method "loadDocumentMetadata" to be public and static.',
+                        '%s requires document class %s method "loadClassMetadata" to be public and static.',
                         __CLASS__,
                         $documentClass
                     )
                 );
             }
 
-            $metadata = new DocumentMetadata($documentClass);
-            call_user_func([$documentClass, 'loadDocumentMetadata'], $metadata);
+            $metadata = new ClassMetadata($documentClass);
+            call_user_func([$documentClass, 'loadClassMetadata'], $metadata);
+            if (null === $metadata->getPrimaryKeyField()) {
+                $metadata->addObjectIdField('id', '_id', true);
+            }
             $this->metadataCache[$documentClass] = $metadata;
         }
 

@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM;
 
-interface DocumentRepositoryFactoryInterface
+interface RepositoryFactoryInterface
 {
     /**
      * @param DocumentManager $documentManager

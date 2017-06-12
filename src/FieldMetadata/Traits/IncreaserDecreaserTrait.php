@@ -1,48 +1,20 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\Metadata;
+namespace Tequila\MongoDB\ODM;
 
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Generator\ProxyGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 
-class IntegerField extends AbstractFieldMetadata
+trait IncreaserDecreaserTrait
 {
-    public function generateProxy(ProxyGenerator $proxyGenerator): void
-    {
-        $this->generateIncreaser($proxyGenerator);
-        $this->generateDecreaser($proxyGenerator);
-
-        parent::generateProxy($proxyGenerator);
-    }
-
-    public function getSerializationCode(ProxyGenerator $proxyGenerator): string
-    {
-        return '$target = null === $value ? null : (int) $value;';
-    }
-
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
-    {
-        return '$objectData = null === $dbData ? null : (int) $dbData;';
-    }
-
-    public function getTypeHint(): string
-    {
-        return 'int';
-    }
-
-    public function getReturnType(): string
-    {
-        return '?int';
-    }
-
     protected function generateIncreaser(ProxyGenerator $proxyGenerator)
     {
         $methodName = 'increase'.StringUtil::camelize($this->propertyName);
-        if (!$proxyGenerator->getReflection()->hasMethod($methodName)) {
+        if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
             $proxyGenerator->addError(
                 sprintf(
-                    'Document class %s does not contain method %s, therefore it have not been generated in proxy.',
+                    'Document class %s does not contain method %s, therefore it had not been generated in proxy.',
                     $proxyGenerator->getDocumentClass(),
                     $methodName
                 )
@@ -51,11 +23,11 @@ class IntegerField extends AbstractFieldMetadata
             return;
         }
 
-        $methodReflection = $proxyGenerator->getReflection()->getMethod($methodName);
+        $methodReflection = $proxyGenerator->getDocumentReflection()->getMethod($methodName);
         if (1 !== count($methodReflection->getParameters())) {
             $proxyGenerator->addError(
                 sprintf(
-                    'Method %s::%s() must have 1 argument, but has %d arguments, therefore it have not been generated in proxy.',
+                    'Method %s::%s() must have 1 argument, but has %d arguments, therefore it had not been generated in proxy.',
                     $proxyGenerator->getDocumentClass(),
                     $methodName,
                     count($methodReflection->getParameters())
@@ -85,7 +57,7 @@ EOT;
     protected function generateDecreaser(ProxyGenerator $proxyGenerator)
     {
         $methodName = 'decrease'.StringUtil::camelize($this->propertyName);
-        if (!$proxyGenerator->getReflection()->hasMethod($methodName)) {
+        if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
             $proxyGenerator->addError(
                 sprintf(
                     'Document class %s does not contain method %s, therefore it have not been generated in proxy.',
@@ -97,11 +69,11 @@ EOT;
             return;
         }
 
-        $methodReflection = $proxyGenerator->getReflection()->getMethod($methodName);
+        $methodReflection = $proxyGenerator->getDocumentReflection()->getMethod($methodName);
         if (1 !== count($methodReflection->getParameters())) {
             $proxyGenerator->addError(
                 sprintf(
-                    'Method %s::%s() must have 1 argument, but has %d arguments, therefore it have not been generated in proxy.',
+                    'Method %s::%s() must have 1 argument, but has %d arguments, therefore it had not been generated in proxy.',
                     $proxyGenerator->getDocumentClass(),
                     $methodName,
                     count($methodReflection->getParameters())

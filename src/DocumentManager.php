@@ -25,26 +25,26 @@ class DocumentManager
     private $collectionsCache = [];
 
     /**
-     * @var DocumentRepositoryFactoryInterface
+     * @var RepositoryFactoryInterface
      */
     private $repositoryFactory;
 
     /**
-     * @var DocumentMetadataFactoryInterface
+     * @var MetadataFactoryInterface
      */
     private $metadataFactory;
 
     /**
-     * @param Database                           $database
-     * @param BulkWriteBuilderFactory            $bulkWriteBuilderFactory
-     * @param DocumentRepositoryFactoryInterface $repositoryFactory
-     * @param DocumentMetadataFactoryInterface   $metadataFactory
+     * @param Database                   $database
+     * @param BulkWriteBuilderFactory    $bulkWriteBuilderFactory
+     * @param RepositoryFactoryInterface $repositoryFactory
+     * @param MetadataFactoryInterface   $metadataFactory
      */
     public function __construct(
         Database $database,
         BulkWriteBuilderFactory $bulkWriteBuilderFactory,
-        DocumentRepositoryFactoryInterface $repositoryFactory,
-        DocumentMetadataFactoryInterface $metadataFactory
+        RepositoryFactoryInterface $repositoryFactory,
+        MetadataFactoryInterface $metadataFactory
     ) {
         $this->database = $database;
         $this->bulkWriteBuilderFactory = $bulkWriteBuilderFactory;
@@ -71,7 +71,7 @@ class DocumentManager
      */
     public function getBulkWriteBuilder($documentClass)
     {
-        $metadata = $this->metadataFactory->getDocumentMetadata($documentClass);
+        $metadata = $this->metadataFactory->getClassMetadata($documentClass);
         $namespace = $this->database->getDatabaseName().'.'.$metadata->getCollectionName();
 
         return $this->bulkWriteBuilderFactory->getBulkWriteBuilder($namespace);
@@ -103,7 +103,7 @@ class DocumentManager
      */
     public function getCollectionByDocumentClass($documentClass)
     {
-        $metadata = $this->metadataFactory->getDocumentMetadata($documentClass);
+        $metadata = $this->metadataFactory->getClassMetadata($documentClass);
 
         return $this->getCollection($metadata->getCollectionName(), $metadata->getCollectionOptions());
     }
@@ -111,11 +111,11 @@ class DocumentManager
     /**
      * @param $documentClass
      *
-     * @return DocumentMetadata
+     * @return ClassMetadata
      */
     public function getMetadata($documentClass)
     {
-        return $this->metadataFactory->getDocumentMetadata($documentClass);
+        return $this->metadataFactory->getClassMetadata($documentClass);
     }
 
     /**

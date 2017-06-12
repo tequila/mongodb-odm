@@ -1,21 +1,26 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\Proxy;
+namespace Tequila\MongoDB\ODM;
 
-use Tequila\MongoDB\ODM\DocumentMetadataFactoryInterface;
-use Zend\Code\Generator\FileGenerator;
+use Tequila\MongoDB\ODM\Code\FileGenerator;
+use Tequila\MongoDB\ODM\Generator\ProxyGenerator;
 
-class ProxyGeneratorFactory
+class ProxyGeneratorFactory implements ProxyFactoryInterface
 {
     /**
-     * @var DocumentMetadataFactoryInterface
+     * @var MetadataFactoryInterface
      */
     private $metadataFactory;
 
     /**
      * @var ProxyGenerator[]
      */
-    private $generatorsCache = [];
+    private $rootGeneratorsCache = [];
+
+    /**
+     * @var ProxyGenerator[]
+     */
+    private $nestedGeneratorsCache = [];
 
     /**
      * @var string
@@ -32,16 +37,19 @@ class ProxyGeneratorFactory
      */
     private $proxyClassNames = [];
 
+    /**
+     * @var bool
+     */
     private $requireGeneratedFiles;
 
     /**
-     * @param DocumentMetadataFactoryInterface $metadataFactory
-     * @param string                           $proxiesDir
-     * @param string                           $proxiesNamespace
-     * @param bool                             $requireGeneratedFiles
+     * @param MetadataFactoryInterface $metadataFactory
+     * @param string                   $proxiesDir
+     * @param string                   $proxiesNamespace
+     * @param bool                     $requireGeneratedFiles
      */
     public function __construct(
-        DocumentMetadataFactoryInterface $metadataFactory,
+        MetadataFactoryInterface $metadataFactory,
         string $proxiesDir,
         string $proxiesNamespace,
         bool $requireGeneratedFiles = false
@@ -54,34 +62,41 @@ class ProxyGeneratorFactory
 
     /**
      * @param string $documentClass
+     * @param bool   $isRootProxy
      *
      * @return ProxyGenerator
      */
-    public function getGenerator(string $documentClass): ProxyGenerator
+    public function getGenerator(string $documentClass, bool $isRootProxy = true): ProxyGenerator
     {
-        if (!array_key_exists($documentClass, $this->generatorsCache)) {
-            $this->generatorsCache[$documentClass] = new ProxyGenerator(
-                $this->metadataFactory->getDocumentMetadata($documentClass),
-                $this
+        $cache = $isRootProxy ? $this->rootGeneratorsCache : $this->nestedGeneratorsCache;
+        if (!array_key_exists($documentClass, $cache)) {
+            $cache[$documentClass] = new ProxyGenerator(
+                $documentClass,
+                $this->metadataFactory,
+                $this,
+                $this->proxiesNamespace,
+                $isRootProxy
             );
         }
 
-        return $this->generatorsCache[$documentClass];
+        if ($isRootProxy) {
+            $this->rootGeneratorsCache = $cache;
+        } else {
+            $this->nestedGeneratorsCache = $cache;
+        }
+
+        return $cache[$documentClass];
     }
 
     public function getProxyClass(string $documentClass, bool $asRootDocument = true): string
     {
-        $proxyClassNamePostfix = $asRootDocument ? 'RootProxy' : 'Proxy';
-        $proxyClassName = ltrim($documentClass, '\\').$proxyClassNamePostfix;
-        $proxyClassName = $this->proxiesNamespace.'\\'.$proxyClassName;
+        $proxyGenerator = $this->getGenerator($documentClass, $asRootDocument);
 
+        $proxyClassName = $proxyGenerator->getProxyClass();
         if (array_key_exists($proxyClassName, $this->proxyClassNames)) {
-            return $proxyClassName;
+            return $this->proxyClassNames[$proxyClassName];
         }
-
-        $proxyGenerator = $this->getGenerator($documentClass);
-        $classGenerator = $proxyGenerator->generateClass($asRootDocument);
-        $classGenerator->setName($proxyClassName);
+        $classGenerator = $proxyGenerator->generateClass();
 
         $fileName = $classGenerator->getName().'.php';
 

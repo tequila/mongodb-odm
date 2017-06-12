@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM;
 
-class DefaultRepositoryFactory implements DocumentRepositoryFactoryInterface
+class DefaultRepositoryFactory implements RepositoryFactoryInterface
 {
     /**
      * @var DocumentRepository[]
@@ -10,14 +10,14 @@ class DefaultRepositoryFactory implements DocumentRepositoryFactoryInterface
     private $repositoriesCache = [];
 
     /**
-     * @var DocumentMetadataFactoryInterface
+     * @var MetadataFactoryInterface
      */
     private $metadataFactory;
 
     /**
-     * @param DocumentMetadataFactoryInterface $metadataFactory
+     * @param MetadataFactoryInterface $metadataFactory
      */
-    public function __construct(DocumentMetadataFactoryInterface $metadataFactory)
+    public function __construct(MetadataFactoryInterface $metadataFactory)
     {
         $this->metadataFactory = $metadataFactory;
     }
@@ -30,7 +30,7 @@ class DefaultRepositoryFactory implements DocumentRepositoryFactoryInterface
         if (!array_key_exists($documentClass, $this->repositoriesCache)) {
             $collection = $documentManager->getCollectionByDocumentClass($documentClass);
 
-            $metadata = $this->metadataFactory->getDocumentMetadata($documentClass);
+            $metadata = $this->metadataFactory->getClassMetadata($documentClass);
             if (null === $repositoryClass = $metadata->getRepositoryClass()) {
                 $repositoryClass = DocumentRepository::class;
             }

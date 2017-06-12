@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Proxy\Traits;
 
-use Tequila\MongoDB\ODM\Proxy\RootDocumentInterface;
+use Tequila\MongoDB\ODM\Proxy\RootProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\UpdateBuilderInterface;
 
 trait ProxyTrait
@@ -10,7 +10,7 @@ trait ProxyTrait
     use RealClassTrait;
 
     /**
-     * @var RootDocumentInterface
+     * @var RootProxyInterface
      */
     private $rootDocument;
 
@@ -20,9 +20,9 @@ trait ProxyTrait
     private $pathInDocument;
 
     /**
-     * @return RootDocumentInterface|UpdateBuilderInterface
+     * @return RootProxyInterface|UpdateBuilderInterface
      */
-    public function getRootDocument(): RootDocumentInterface
+    public function getRootDocument(): RootProxyInterface
     {
         return $this->rootDocument;
     }

@@ -3,7 +3,7 @@
 namespace Tequila\MongoDB\ODM\Proxy\Traits;
 
 use Tequila\MongoDB\BulkWrite;
-use Tequila\MongoDB\ODM\Proxy\RootDocumentInterface;
+use Tequila\MongoDB\ODM\Proxy\RootProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\UpdateBuilderInterface;
 use Tequila\MongoDB\WriteModelInterface;
 
@@ -24,11 +24,11 @@ trait RootDocumentTrait
     abstract public function getMongoId();
 
     /**
-     * @return RootDocumentInterface|$this
+     * @return RootProxyInterface|$this
      */
-    public function getRootDocument(): RootDocumentInterface
+    public function getRootDocument(): RootProxyInterface
     {
-        /* @var RootDocumentInterface $this */
+        /* @var RootProxyInterface $this */
         return $this;
     }
 
