@@ -1,17 +1,18 @@
 <?php
 
-namespace Tequila\MongoDB\ODM;
+namespace Tequila\MongoDB\ODM\Metadata;
 
-use Tequila\MongoDB\ODM\FieldMetadata\AbstractFieldMetadata;
-use Tequila\MongoDB\ODM\FieldMetadata\BooleanField;
-use Tequila\MongoDB\ODM\FieldMetadata\CollectionField;
-use Tequila\MongoDB\ODM\FieldMetadata\DateField;
-use Tequila\MongoDB\ODM\FieldMetadata\DocumentField;
-use Tequila\MongoDB\ODM\FieldMetadata\FieldMetadataInterface;
-use Tequila\MongoDB\ODM\FieldMetadata\FloatField;
-use Tequila\MongoDB\ODM\FieldMetadata\IntegerField;
-use Tequila\MongoDB\ODM\FieldMetadata\ObjectIdField;
-use Tequila\MongoDB\ODM\FieldMetadata\StringField;
+use Tequila\MongoDB\ODM\Repository\Repository;
+use Tequila\MongoDB\ODM\Metadata\Field\AbstractFieldMetadata;
+use Tequila\MongoDB\ODM\Metadata\Field\BooleanField;
+use Tequila\MongoDB\ODM\Metadata\Field\CollectionField;
+use Tequila\MongoDB\ODM\Metadata\Field\DateField;
+use Tequila\MongoDB\ODM\Metadata\Field\DocumentField;
+use Tequila\MongoDB\ODM\Metadata\Field\FieldMetadataInterface;
+use Tequila\MongoDB\ODM\Metadata\Field\FloatField;
+use Tequila\MongoDB\ODM\Metadata\Field\IntegerField;
+use Tequila\MongoDB\ODM\Metadata\Field\ObjectIdField;
+use Tequila\MongoDB\ODM\Metadata\Field\StringField;
 
 class ClassMetadata
 {
@@ -38,7 +39,7 @@ class ClassMetadata
     /**
      * @var string|null
      */
-    private $repositoryClass = DocumentRepository::class;
+    private $repositoryClass = Repository::class;
 
     /**
      * @var AbstractFieldMetadata[]

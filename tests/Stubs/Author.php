@@ -2,8 +2,8 @@
 
 namespace Tequila\MongoDB\ODM\Tests\Stubs;
 
-use Tequila\MongoDB\ODM\ClassMetadata;
-use Tequila\MongoDB\ODM\FieldMetadata\StringField;
+use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
+use Tequila\MongoDB\ODM\Metadata\Field\StringField;
 
 class Author
 {

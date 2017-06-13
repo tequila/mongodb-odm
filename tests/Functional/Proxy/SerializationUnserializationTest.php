@@ -7,9 +7,9 @@ use MongoDB\BSON\UTCDateTime;
 use PHPUnit\Framework\TestCase;
 use function Tequila\MongoDB\applyTypeMap;
 use DateTime;
-use Tequila\MongoDB\ODM\DefaultMetadataFactory;
+use Tequila\MongoDB\ODM\Metadata\Factory\StaticMethodAwareFactory;
 use Tequila\MongoDB\ODM\Proxy\NestedProxyInterface;
-use Tequila\MongoDB\ODM\ProxyGeneratorFactory;
+use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
 use Tequila\MongoDB\ODM\Tests\Stubs\Author;
 use Tequila\MongoDB\ODM\Tests\Stubs\BlogPost;
 use Tequila\MongoDB\ODM\Tests\Stubs\Comment;
@@ -80,15 +80,16 @@ class SerializationUnserializationTest extends TestCase
      * @depends testSerialization
      *
      * @param array $blogPostSerialized
+     *
+     * @return BlogPost
      */
     public function testUnserialization(array $blogPostSerialized)
     {
-        $metadataFactory = new DefaultMetadataFactory();
-        $proxyFactory = new ProxyGeneratorFactory(
-            $metadataFactory,
+        $metadataFactory = new StaticMethodAwareFactory();
+        $proxyFactory = new GeneratorFactory(
             __DIR__.'/../../Stubs/Proxy',
-            '',
-            true
+            'TequilaODMFunctionalTests',
+            $metadataFactory
         );
 
         $blogPostProxyClass = $proxyFactory->getProxyClass(BlogPost::class);
@@ -136,5 +137,7 @@ class SerializationUnserializationTest extends TestCase
             $this->assertSame($commentsSerialized[$i]['_author']['_emails'], $author->getEmails());
             $this->assertSame($blogPost, $author->getRootDocument());
         }
+
+        return $blogPost;
     }
 }

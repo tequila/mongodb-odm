@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Tests\Stubs;
 
-use Tequila\MongoDB\ODM\ClassMetadata;
+use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 
 class Comment
 {

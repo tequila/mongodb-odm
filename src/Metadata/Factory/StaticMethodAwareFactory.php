@@ -1,10 +1,11 @@
 <?php
 
-namespace Tequila\MongoDB\ODM;
+namespace Tequila\MongoDB\ODM\Metadata\Factory;
 
+use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 
-class DefaultMetadataFactory implements MetadataFactoryInterface
+class StaticMethodAwareFactory implements MetadataFactoryInterface
 {
     /**
      * @var array

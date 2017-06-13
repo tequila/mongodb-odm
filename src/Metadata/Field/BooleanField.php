@@ -1,9 +1,9 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\FieldMetadata;
+namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
-use Tequila\MongoDB\ODM\Generator\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 use Zend\Code\Generator\MethodGenerator;
 
 class BooleanField extends AbstractFieldMetadata

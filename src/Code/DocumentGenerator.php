@@ -1,11 +1,9 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\Generator;
+namespace Tequila\MongoDB\ODM\Code;
 
 use MongoDB\BSON\Serializable;
-use Tequila\MongoDB\ODM\ClassMetadata;
-use Tequila\MongoDB\ODM\Code\FileGenerator;
-use Tequila\MongoDB\ODM\Code\PropertyGenerator;
+use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\UnserializableTrait;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;

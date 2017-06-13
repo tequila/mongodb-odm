@@ -4,19 +4,19 @@ namespace Tequila\MongoDB\ODM\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Tequila\MongoDB\Collection;
-use Tequila\MongoDB\ODM\DocumentRepository;
+use Tequila\MongoDB\ODM\Repository\Repository;
 
-class DocumentRepositoryTest extends TestCase
+class RepositoryTest extends TestCase
 {
     /** @var \PHPUnit_Framework_MockObject_MockObject */
     private $collection;
-    /** @var DocumentRepository */
+    /** @var Repository */
     private $repository;
 
     protected function setUp()
     {
         $this->collection = $this->createMock(Collection::class);
-        $this->repository = new DocumentRepository($this->collection);
+        $this->repository = new Repository($this->collection);
     }
 
     public function testFindAll()

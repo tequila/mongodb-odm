@@ -1,9 +1,9 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\FieldMetadata;
+namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use MongoDB\BSON\ObjectID;
-use Tequila\MongoDB\ODM\Generator\DocumentGenerator;
+use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 
 class ObjectIdField extends AbstractFieldMetadata
 {

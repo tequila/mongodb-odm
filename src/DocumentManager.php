@@ -6,6 +6,10 @@ use MongoDB\BSON\Serializable;
 use Tequila\MongoDB\Collection;
 use Tequila\MongoDB\Database;
 use Tequila\MongoDB\DocumentInterface;
+use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
+use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
+use Tequila\MongoDB\ODM\Repository\Repository;
+use Tequila\MongoDB\ODM\Repository\Factory\RepositoryFactoryInterface;
 
 class DocumentManager
 {
@@ -121,7 +125,7 @@ class DocumentManager
     /**
      * @param string $documentClass
      *
-     * @return DocumentRepository
+     * @return Repository
      */
     public function getRepository($documentClass)
     {

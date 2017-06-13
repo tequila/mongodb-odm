@@ -1,12 +1,12 @@
 <?php
 
-namespace Tequila\MongoDB\ODM;
+namespace Tequila\MongoDB\ODM\Repository;
 
 use MongoDB\BSON\ObjectID;
 use Tequila\MongoDB\Collection;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 
-class DocumentRepository
+class Repository
 {
     /**
      * @var Collection

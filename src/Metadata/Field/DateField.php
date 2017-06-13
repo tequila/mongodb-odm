@@ -1,11 +1,11 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\FieldMetadata;
+namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use DateTimeInterface;
 use MongoDB\BSON\UTCDateTime;
-use Tequila\MongoDB\ODM\Generator\DocumentGenerator;
-use Tequila\MongoDB\ODM\Generator\ProxyGenerator;
+use Tequila\MongoDB\ODM\Code\DocumentGenerator;
+use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 
 class DateField extends AbstractFieldMetadata
 {

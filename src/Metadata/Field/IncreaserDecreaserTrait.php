@@ -1,8 +1,8 @@
 <?php
 
-namespace Tequila\MongoDB\ODM;
+namespace Tequila\MongoDB\ODM\Metadata\Field;
 
-use Tequila\MongoDB\ODM\Generator\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 

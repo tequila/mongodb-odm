@@ -1,17 +1,16 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\FieldMetadata;
+namespace Tequila\MongoDB\ODM\Metadata\Field;
 
-use Tequila\MongoDB\ODM\IncreaserDecreaserTrait;
-use Tequila\MongoDB\ODM\Generator\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 
-class IntegerField extends AbstractFieldMetadata
+class FloatField extends AbstractFieldMetadata
 {
     use IncreaserDecreaserTrait;
 
     public function getType(): string
     {
-        return 'int';
+        return 'float';
     }
 
     public function generateProxy(ProxyGenerator $proxyGenerator)
@@ -24,11 +23,11 @@ class IntegerField extends AbstractFieldMetadata
 
     public function getSerializationCode(): string
     {
-        return '$dbData = null === $objectData ? null : (int) $objectData;';
+        return '$dbData = null === $objectData ? null : (float) $objectData;';
     }
 
     public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
     {
-        return '$objectData = null === $dbData ? null : (int) $dbData;';
+        return '$objectData = null === $dbData ? null : (float) $dbData;';
     }
 }

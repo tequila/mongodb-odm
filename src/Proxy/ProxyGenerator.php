@@ -1,20 +1,16 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\Generator;
+namespace Tequila\MongoDB\ODM\Proxy;
 
 use MongoDB\BSON\Unserializable;
 use Tequila\MongoDB\ODM\DocumentManagerAwareInterface;
-use Tequila\MongoDB\ODM\MetadataFactoryInterface;
+use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
+use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
 use Tequila\MongoDB\ODM\Exception\LogicException;
-use Tequila\MongoDB\ODM\ClassMetadata;
-use Tequila\MongoDB\ODM\Proxy\CurrentRootDocument;
-use Tequila\MongoDB\ODM\Proxy\MongoIdAwareInterface;
-use Tequila\MongoDB\ODM\Proxy\NestedProxyInterface;
-use Tequila\MongoDB\ODM\ProxyGeneratorFactory;
-use Tequila\MongoDB\ODM\Proxy\RootProxyInterface;
+use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
+use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
 use Tequila\MongoDB\ODM\Proxy\Traits\ProxyTrait;
 use Tequila\MongoDB\ODM\Proxy\Traits\RootDocumentTrait;
-use Tequila\MongoDB\ODM\Proxy\UpdateBuilderInterface;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
@@ -39,7 +35,7 @@ class ProxyGenerator
     private $classGenerator;
 
     /**
-     * @var ProxyGeneratorFactory
+     * @var GeneratorFactory
      */
     private $factory;
 
@@ -54,11 +50,6 @@ class ProxyGenerator
     private $errors = [];
 
     /**
-     * @var string
-     */
-    private $proxyNamespace;
-
-    /**
      * @var
      */
     private $isRoot;
@@ -66,14 +57,14 @@ class ProxyGenerator
     /**
      * @param string                   $documentClass
      * @param MetadataFactoryInterface $metadataFactory
-     * @param ProxyGeneratorFactory    $factory
+     * @param GeneratorFactory         $factory
      * @param string                   $proxyNamespace
      * @param bool                     $isRoot
      */
     public function __construct(
         string $documentClass,
         MetadataFactoryInterface $metadataFactory,
-        ProxyGeneratorFactory $factory,
+        GeneratorFactory $factory,
         string $proxyNamespace,
         bool $isRoot = true
     ) {
@@ -83,7 +74,10 @@ class ProxyGenerator
         $this->metadataFactory = $metadataFactory;
         $this->factory = $factory;
         $this->reflection = new ClassReflection($metadata->getDocumentClass());
-        $this->proxyNamespace = rtrim($proxyNamespace, '\\');
+        if ('' === $proxyNamespace || '\\' === $proxyNamespace) {
+            throw new InvalidArgumentException('$proxyNamespace cannot be empty.');
+        }
+        $this->proxyNamespace = trim($proxyNamespace, '\\');
         $this->isRoot = $isRoot;
 
         $this->classGenerator = new ClassGenerator($this->getProxyClass());
@@ -113,19 +107,16 @@ class ProxyGenerator
      */
     public function getProxyClass(): string
     {
-        $proxyClassNamePostfix = $this->isRoot ? 'RootProxy' : 'NestedProxy';
-        $proxyClassName = ltrim($this->getDocumentClass(), '\\').$proxyClassNamePostfix;
-        if ('' === $this->proxyNamespace) {
-            return $proxyClassName;
-        }
+        $suffix = $this->isRoot ? 'RootProxy' : 'NestedProxy';
+        $proxyClassName = $this->getDocumentClass().$suffix;
 
         return $this->proxyNamespace.'\\'.$proxyClassName;
     }
 
     /**
-     * @return ProxyGeneratorFactory
+     * @return GeneratorFactory
      */
-    public function getFactory(): ProxyGeneratorFactory
+    public function getFactory(): GeneratorFactory
     {
         return $this->factory;
     }
