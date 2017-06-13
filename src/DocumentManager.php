@@ -44,11 +44,11 @@ class DocumentManager
     private $proxyFactory;
 
     /**
-     * @param Database $database
-     * @param BulkWriteBuilderFactory $bulkWriteBuilderFactory
+     * @param Database                   $database
+     * @param BulkWriteBuilderFactory    $bulkWriteBuilderFactory
      * @param RepositoryFactoryInterface $repositoryFactory
-     * @param MetadataFactoryInterface $metadataFactory
-     * @param ProxyFactoryInterface $proxyFactory
+     * @param MetadataFactoryInterface   $metadataFactory
+     * @param ProxyFactoryInterface      $proxyFactory
      */
     public function __construct(
         Database $database,
@@ -132,6 +132,7 @@ class DocumentManager
 
     /**
      * @param string $documentClass
+     *
      * @return string
      */
     public function getProxyClass(string $documentClass): string

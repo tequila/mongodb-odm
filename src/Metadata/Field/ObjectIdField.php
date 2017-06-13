@@ -4,6 +4,7 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use MongoDB\BSON\ObjectID;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
+use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 
 class ObjectIdField extends AbstractFieldMetadata
 {
@@ -28,6 +29,13 @@ class ObjectIdField extends AbstractFieldMetadata
         $documentGenerator->addUse(ObjectID::class);
 
         parent::generateDocument($documentGenerator);
+    }
+
+    public function generateProxy(ProxyGenerator $proxyGenerator)
+    {
+        $proxyGenerator->addUse(ObjectID::class);
+
+        parent::generateProxy($proxyGenerator);
     }
 
     public function getType(): string

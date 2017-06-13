@@ -45,8 +45,8 @@ class DocumentsCollection implements Iterator
 
     /**
      * @param DocumentManager $documentManager
-     * @param Cursor $cursor
-     * @param string $documentClass
+     * @param Cursor          $cursor
+     * @param string          $documentClass
      */
     public function __construct(DocumentManager $documentManager, Cursor $cursor, string $documentClass)
     {
@@ -97,7 +97,7 @@ class DocumentsCollection implements Iterator
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rewind()
     {
