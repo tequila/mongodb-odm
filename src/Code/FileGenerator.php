@@ -17,7 +17,12 @@ class FileGenerator extends \Zend\Code\Generator\FileGenerator
                 $resolved = $parts[0];
             }
 
-            $code = str_replace('\\'.ltrim($parts[0], '\\'), $resolved, $code);
+            $code = str_replace(
+                // TODO use preg_replace instead of this silly code
+                [' \\'.ltrim($parts[0], '\\'), '(\\'.ltrim($parts[0], '\\')],
+                [' '.$resolved, '('.$resolved],
+                $code
+            );
         }
 
         return $code;

@@ -73,6 +73,9 @@ EOT;
     public function generateProxy(ProxyGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(InvalidArgumentException::class);
+        if ($this->itemMetadata instanceof DocumentField) {
+            $proxyGenerator->addUse($this->itemMetadata->getDocumentClass());
+        }
 
         $this->generateAdderProxy($proxyGenerator);
         $this->generateRemoverProxy($proxyGenerator);

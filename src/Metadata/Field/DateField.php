@@ -25,6 +25,7 @@ class DateField extends AbstractFieldMetadata
     public function generateProxy(ProxyGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(UTCDateTime::class);
+        $proxyGenerator->addUse(DateTimeInterface::class);
 
         parent::generateProxy($proxyGenerator);
     }

@@ -23,7 +23,7 @@ class Repository
 
     /**
      * @param DocumentManager $documentManager
-     * @param string $documentClass
+     * @param string          $documentClass
      */
     final public function __construct(DocumentManager $documentManager, string $documentClass)
     {
@@ -34,6 +34,7 @@ class Repository
     /**
      * @param array $filter
      * @param array $options
+     *
      * @return DocumentsCollection
      */
     public function findAll(array $filter = [], array $options = []): DocumentsCollection
@@ -45,6 +46,7 @@ class Repository
 
     /**
      * @param array $ids
+     *
      * @return DocumentsCollection
      */
     public function findAllByIds(array $ids): DocumentsCollection
@@ -83,6 +85,7 @@ class Repository
     /**
      * @param array $filter
      * @param array $options
+     *
      * @return object
      */
     public function findOneAndDelete(array $filter, array $options = [])
@@ -94,7 +97,7 @@ class Repository
 
         $document = $this->getCollection()->findOneAndDelete($filter, $options);
         if (null !== $document) {
-            /** @var DocumentManagerAwareInterface $document */
+            /* @var DocumentManagerAwareInterface $document */
             $document->setDocumentManager($this->documentManager);
         }
 
@@ -105,6 +108,7 @@ class Repository
      * @param array $filter
      * @param array $update
      * @param array $options
+     *
      * @return object
      */
     public function findOneAndUpdate(array $filter, array $update, array $options = [])
@@ -116,7 +120,7 @@ class Repository
 
         $document = $this->getCollection()->findOneAndUpdate($filter, $update, $options);
         if (null !== $document) {
-            /** @var DocumentManagerAwareInterface $document */
+            /* @var DocumentManagerAwareInterface $document */
             $document->setDocumentManager($this->documentManager);
         }
 
@@ -124,9 +128,10 @@ class Repository
     }
 
     /**
-     * @param array $filter
+     * @param array        $filter
      * @param array|object $replacement
-     * @param array $options
+     * @param array        $options
+     *
      * @return object
      */
     public function findOneAndReplace(array $filter, $replacement, array $options = [])
@@ -138,7 +143,7 @@ class Repository
 
         $document = $this->getCollection()->findOneAndReplace($filter, $replacement, $options);
         if (null !== $document) {
-            /** @var DocumentManagerAwareInterface $document */
+            /* @var DocumentManagerAwareInterface $document */
             $document->setDocumentManager($this->documentManager);
         }
 

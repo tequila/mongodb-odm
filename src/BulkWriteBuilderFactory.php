@@ -11,7 +11,8 @@ class BulkWriteBuilderFactory
 
     /**
      * @param DocumentManager $documentManager
-     * @param string $collectionName
+     * @param string          $collectionName
+     *
      * @return BulkWriteBuilder
      */
     public function getBulkWriteBuilder(DocumentManager $documentManager, string $collectionName)

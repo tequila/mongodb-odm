@@ -2,10 +2,10 @@
 
 namespace Tequila\MongoDB\ODM\Tests\Functional\Proxy;
 
+use function MongoDB\apply_type_map_to_document;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use PHPUnit\Framework\TestCase;
-use function Tequila\MongoDB\applyTypeMap;
 use DateTime;
 use Tequila\MongoDB\ODM\Metadata\Factory\StaticMethodAwareFactory;
 use Tequila\MongoDB\ODM\Proxy\NestedProxyInterface;
@@ -45,7 +45,10 @@ class SerializationUnserializationTest extends TestCase
         $blogPost->setCreatedAt(new DateTime());
         $blogPost->setComments([$comment1, $comment2]);
 
-        $data = applyTypeMap($blogPost, ['document' => 'array', 'root' => 'array', 'array' => 'array']);
+        $data = apply_type_map_to_document(
+            $blogPost,
+            ['document' => 'array', 'root' => 'array', 'array' => 'array']
+        );
 
         $this->assertInstanceOf(ObjectID::class, $data['_id']);
         $this->assertSame($blogPost->getTitle(), $data['_title']);
@@ -97,7 +100,7 @@ class SerializationUnserializationTest extends TestCase
         $commentProxyClass = $proxyFactory->getProxyClass(Comment::class, false);
 
         /** @var BlogPost $blogPost */
-        $blogPost = applyTypeMap(
+        $blogPost = apply_type_map_to_document(
             $blogPostSerialized,
             ['root' => $blogPostProxyClass, 'document' => 'array']
         );

@@ -5,7 +5,6 @@ namespace Tequila\MongoDB\ODM;
 use MongoDB\Operation\BulkWrite;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Exception\LogicException;
-use Tequila\MongoDB\ODM\WriteModelInterface;
 
 class BulkWriteBuilder
 {
@@ -26,7 +25,7 @@ class BulkWriteBuilder
 
     /**
      * @param DocumentManager $documentManager
-     * @param string $collectionName
+     * @param string          $collectionName
      */
     public function __construct(DocumentManager $documentManager, string $collectionName)
     {
@@ -36,6 +35,7 @@ class BulkWriteBuilder
 
     /**
      * @param array|WriteModelInterface $writeModel
+     *
      * @return $this
      */
     public function addWriteModel($writeModel)
@@ -69,7 +69,7 @@ class BulkWriteBuilder
             throw new LogicException('BulkWriteBuilder does not contain any write operations.');
         }
 
-        $writeModels = array_map(function($writeModel) {
+        $writeModels = array_map(function ($writeModel) {
             if ($writeModel instanceof WriteModelInterface) {
                 return $writeModel->toArray();
             }

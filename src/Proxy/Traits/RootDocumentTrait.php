@@ -61,7 +61,7 @@ trait RootDocumentTrait
             BulkWrite::UPDATE_ONE => [
                 ['_id' => $this->getMongoId()],
                 $this->mongoDbUpdate,
-                $this->mongoDbOptions
+                $this->mongoDbOptions,
             ],
         ];
     }
