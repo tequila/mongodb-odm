@@ -2,21 +2,16 @@
 
 namespace Tequila\MongoDB\ODM\Proxy\Traits;
 
-use Tequila\MongoDB\BulkWrite;
+use MongoDB\Operation\BulkWrite;
 use Tequila\MongoDB\ODM\Proxy\RootProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\UpdateBuilderInterface;
-use Tequila\MongoDB\WriteModelInterface;
+use Tequila\MongoDB\ODM\WriteModelInterface;
 
 trait RootDocumentTrait
 {
     use DocumentManagerAwareTrait;
     use UpdateBuilderTrait;
     use RealClassTrait;
-
-    /**
-     * @var bool
-     */
-    private $addedToBulk = false;
 
     /**
      * @return mixed
@@ -47,20 +42,27 @@ trait RootDocumentTrait
      */
     public function update(): UpdateBuilderInterface
     {
-        if (!$this->addedToBulk) {
+        static $addedToBulk = false;
+        if (!$addedToBulk) {
             /* @var WriteModelInterface|UpdateBuilderInterface $this */
-            $this->documentManager->getBulkWriteBuilder(parent::class)->add($this);
-            $this->addedToBulk = true;
+            $this->documentManager->getBulkWriteBuilder(parent::class)->addWriteModel($this);
+            $addedToBulk = true;
         }
 
         return $this;
     }
 
     /**
-     * @param BulkWrite $bulkWrite
+     * @return array
      */
-    public function writeToBulk(BulkWrite $bulkWrite)
+    public function toArray(): array
     {
-        $bulkWrite->update(['_id' => $this->getMongoId()], $this->mongoDbUpdate, $this->mongoDbOptions);
+        return [
+            BulkWrite::UPDATE_ONE => [
+                ['_id' => $this->getMongoId()],
+                $this->mongoDbUpdate,
+                $this->mongoDbOptions
+            ],
+        ];
     }
 }

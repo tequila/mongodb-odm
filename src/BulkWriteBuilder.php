@@ -2,31 +2,22 @@
 
 namespace Tequila\MongoDB\ODM;
 
-use MongoDB\Driver\WriteConcern;
-use Tequila\MongoDB\BulkWrite;
-use Tequila\MongoDB\Manager;
+use MongoDB\Operation\BulkWrite;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Exception\LogicException;
-use Tequila\MongoDB\Write\Model\DeleteMany;
-use Tequila\MongoDB\Write\Model\DeleteOne;
-use Tequila\MongoDB\Write\Model\InsertMany;
-use Tequila\MongoDB\Write\Model\InsertOne;
-use Tequila\MongoDB\Write\Model\ReplaceOne;
-use Tequila\MongoDB\Write\Model\UpdateMany;
-use Tequila\MongoDB\Write\Model\UpdateOne;
-use Tequila\MongoDB\WriteModelInterface;
+use Tequila\MongoDB\ODM\WriteModelInterface;
 
 class BulkWriteBuilder
 {
     /**
-     * @var Manager
+     * @var DocumentManager
      */
-    private $manager;
+    private $documentManager;
 
     /**
      * @var string
      */
-    private $namespace;
+    private $collectionName;
 
     /**
      * @var WriteModelInterface[]
@@ -34,21 +25,34 @@ class BulkWriteBuilder
     private $writeModels = [];
 
     /**
-     * @param Manager $manager
-     * @param string  $namespace
+     * @param DocumentManager $documentManager
+     * @param string $collectionName
      */
-    public function __construct(Manager $manager, $namespace)
+    public function __construct(DocumentManager $documentManager, string $collectionName)
     {
-        $this->manager = $manager;
-        $this->namespace = $namespace;
+        $this->documentManager = $documentManager;
+        $this->collectionName = $collectionName;
     }
 
     /**
-     * @param WriteModelInterface $writeModel
+     * @param array|WriteModelInterface $writeModel
+     * @return $this
      */
-    public function add(WriteModelInterface $writeModel)
+    public function addWriteModel($writeModel)
     {
-        $this->writeModels[] = $writeModel;
+        if (is_array($writeModel) || $writeModel instanceof WriteModelInterface) {
+            $this->writeModels[] = $writeModel;
+
+            return $this;
+        }
+
+        throw new InvalidArgumentException(
+            sprintf(
+                '$write model must be an array in format %s or an instance of %s.',
+                '[$operationType => $arrayOfArguments]',
+                WriteModelInterface::class
+            )
+        );
     }
 
     /**
@@ -59,37 +63,22 @@ class BulkWriteBuilder
         return count($this->writeModels);
     }
 
-    /**
-     * Flushes bulk write to MongoDB.
-     *
-     * @param array $bulkWriteOptions
-     *
-     * @return \Tequila\MongoDB\WriteResult
-     */
     public function flush(array $bulkWriteOptions = [])
     {
         if (0 === count($this->writeModels)) {
             throw new LogicException('BulkWriteBuilder does not contain any write operations.');
         }
 
-        $writeConcern = null;
-        if (isset($bulkWriteOptions['writeConcern'])) {
-            if (!$bulkWriteOptions['writeConcern'] instanceof WriteConcern) {
-                throw new InvalidArgumentException(
-                    sprintf(
-                        'Option "writeConcern" is expected to be "%s", "%s" given.',
-                        WriteConcern::class,
-                        \Tequila\MongoDB\getType($bulkWriteOptions['writeConcern'])
-                    )
-                );
+        $writeModels = array_map(function($writeModel) {
+            if ($writeModel instanceof WriteModelInterface) {
+                return $writeModel->toArray();
             }
 
-            $writeConcern = $bulkWriteOptions['writeConcern'];
-            unset($bulkWriteOptions['writeConcern']);
-        }
+            return $writeModel;
+        }, $this->writeModels);
 
-        $bulkWrite = new BulkWrite($this->writeModels, $bulkWriteOptions);
-        $result = $this->manager->executeBulkWrite($this->namespace, $bulkWrite, $writeConcern);
+        $collection = $this->documentManager->getCollection($this->collectionName);
+        $result = $collection->bulkWrite($writeModels, $bulkWriteOptions);
         $this->writeModels = [];
 
         return $result;
@@ -103,7 +92,7 @@ class BulkWriteBuilder
      */
     public function deleteMany(array $filter, array $options = [])
     {
-        $this->writeModels[] = new DeleteMany($filter, $options);
+        $this->writeModels[] = [BulkWrite::DELETE_MANY => [$filter, $options]];
 
         return $this;
     }
@@ -116,7 +105,7 @@ class BulkWriteBuilder
      */
     public function deleteOne(array $filter, array $options = [])
     {
-        $this->writeModels[] = new DeleteOne($filter, $options);
+        $this->writeModels[] = [BulkWrite::DELETE_ONE => [$filter, $options]];
 
         return $this;
     }
@@ -128,7 +117,9 @@ class BulkWriteBuilder
      */
     public function insertMany(array $documents)
     {
-        $this->writeModels[] = new InsertMany($documents);
+        foreach ($documents as $document) {
+            $this->writeModels[] = [BulkWrite::INSERT_ONE => [$document]];
+        }
 
         return $this;
     }
@@ -140,7 +131,7 @@ class BulkWriteBuilder
      */
     public function insertOne($document)
     {
-        $this->writeModels[] = new InsertOne($document);
+        $this->writeModels[] = [BulkWrite::INSERT_ONE => [$document]];
 
         return $this;
     }
@@ -154,7 +145,7 @@ class BulkWriteBuilder
      */
     public function updateMany(array $filter, array $update, array $options = [])
     {
-        $this->writeModels[] = new UpdateMany($filter, $update, $options);
+        $this->writeModels[] = [BulkWrite::UPDATE_MANY => [$filter, $update, $options]];
 
         return $this;
     }
@@ -168,7 +159,7 @@ class BulkWriteBuilder
      */
     public function updateOne(array $filter, array $update, array $options = [])
     {
-        $this->writeModels[] = new UpdateOne($filter, $update, $options);
+        $this->writeModels[] = [BulkWrite::UPDATE_ONE => [$filter, $update, $options]];
 
         return $this;
     }
@@ -182,7 +173,7 @@ class BulkWriteBuilder
      */
     public function replaceOne(array $filter, $replacement, array $options = [])
     {
-        $this->writeModels[] = new ReplaceOne($filter, $replacement, $options);
+        $this->writeModels[] = [BulkWrite::REPLACE_ONE => [$filter, $replacement, $options]];
 
         return $this;
     }
