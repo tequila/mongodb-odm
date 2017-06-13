@@ -3,11 +3,11 @@
 namespace Tequila\MongoDB\ODM;
 
 use MongoDB\BSON\Serializable;
-use Tequila\MongoDB\Collection;
-use Tequila\MongoDB\Database;
-use Tequila\MongoDB\DocumentInterface;
+use MongoDB\Collection;
+use MongoDB\Database;
 use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
+use Tequila\MongoDB\ODM\Proxy\Factory\ProxyFactoryInterface;
 use Tequila\MongoDB\ODM\Repository\Repository;
 use Tequila\MongoDB\ODM\Repository\Factory\RepositoryFactoryInterface;
 
@@ -39,21 +39,29 @@ class DocumentManager
     private $metadataFactory;
 
     /**
-     * @param Database                   $database
-     * @param BulkWriteBuilderFactory    $bulkWriteBuilderFactory
+     * @var ProxyFactoryInterface
+     */
+    private $proxyFactory;
+
+    /**
+     * @param Database $database
+     * @param BulkWriteBuilderFactory $bulkWriteBuilderFactory
      * @param RepositoryFactoryInterface $repositoryFactory
-     * @param MetadataFactoryInterface   $metadataFactory
+     * @param MetadataFactoryInterface $metadataFactory
+     * @param ProxyFactoryInterface $proxyFactory
      */
     public function __construct(
         Database $database,
         BulkWriteBuilderFactory $bulkWriteBuilderFactory,
         RepositoryFactoryInterface $repositoryFactory,
-        MetadataFactoryInterface $metadataFactory
+        MetadataFactoryInterface $metadataFactory,
+        ProxyFactoryInterface $proxyFactory
     ) {
         $this->database = $database;
         $this->bulkWriteBuilderFactory = $bulkWriteBuilderFactory;
         $this->repositoryFactory = $repositoryFactory;
         $this->metadataFactory = $metadataFactory;
+        $this->proxyFactory = $proxyFactory;
     }
 
     /**
@@ -87,7 +95,7 @@ class DocumentManager
      *
      * @return Collection
      */
-    public function getCollection($collectionName, array $options = [])
+    public function getCollection($collectionName, array $options = []): Collection
     {
         $cacheKey = $collectionName.$this->getCollectionOptionsHash($options);
         if (!array_key_exists($cacheKey, $this->collectionsCache)) {
@@ -105,7 +113,7 @@ class DocumentManager
      *
      * @return Collection
      */
-    public function getCollectionByDocumentClass($documentClass)
+    public function getCollectionByDocumentClass($documentClass): Collection
     {
         $metadata = $this->metadataFactory->getClassMetadata($documentClass);
 
@@ -124,36 +132,21 @@ class DocumentManager
 
     /**
      * @param string $documentClass
+     * @return string
+     */
+    public function getProxyClass(string $documentClass): string
+    {
+        return $this->proxyFactory->getProxyClass($documentClass);
+    }
+
+    /**
+     * @param string $documentClass
      *
      * @return Repository
      */
     public function getRepository($documentClass)
     {
         return $this->repositoryFactory->getDocumentRepository($this, $documentClass);
-    }
-
-    /**
-     * @param DocumentInterface $document
-     */
-    public function insertDocument(DocumentInterface $document)
-    {
-        $this->getBulkWriteBuilder(get_class($document))->insertDocument($document);
-    }
-
-    /**
-     * @param DocumentInterface $document
-     */
-    public function persist(DocumentInterface $document)
-    {
-        if (!$document->getId()) {
-            $this->insertDocument($document);
-        } else {
-            $this->getBulkWriteBuilder(get_class($document))->replaceOne(
-                ['_id' => $document->getId()],
-                $document,
-                ['upsert' => true]
-            );
-        }
     }
 
     /**

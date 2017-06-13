@@ -2,8 +2,6 @@
 
 namespace Tequila\MongoDB\ODM;
 
-use Tequila\MongoDB\Manager;
-
 class BulkWriteBuilderFactory
 {
     /**
@@ -12,33 +10,23 @@ class BulkWriteBuilderFactory
     private $builders = [];
 
     /**
-     * @var Manager
-     */
-    private $manager;
-
-    /**
-     * @param Manager $manager
-     */
-    public function __construct(Manager $manager)
-    {
-        $this->manager = $manager;
-    }
-
-    /**
-     * @param string $namespace
-     *
+     * @param DocumentManager $documentManager
+     * @param string $collectionName
      * @return BulkWriteBuilder
      */
-    public function getBulkWriteBuilder($namespace)
+    public function getBulkWriteBuilder(DocumentManager $documentManager, string $collectionName)
     {
-        if (!array_key_exists($namespace, $this->builders)) {
-            $this->builders[$namespace] = new BulkWriteBuilder($this->manager, $namespace);
+        if (!array_key_exists($collectionName, $this->builders)) {
+            $this->builders[$collectionName] = new BulkWriteBuilder($documentManager, $collectionName);
         }
 
-        return $this->builders[$namespace];
+        return $this->builders[$collectionName];
     }
 
-    public function getBulkWriteBuilders()
+    /**
+     * @return BulkWriteBuilder[]
+     */
+    public function getBulkWriteBuilders(): array
     {
         return $this->builders;
     }

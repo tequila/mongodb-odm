@@ -12,6 +12,7 @@ use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
 use Tequila\MongoDB\ODM\Proxy\Traits\ProxyTrait;
 use Tequila\MongoDB\ODM\Proxy\Traits\RootDocumentTrait;
 use Tequila\MongoDB\ODM\Util\StringUtil;
+use Tequila\MongoDB\ODM\WriteModelInterface;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
@@ -176,6 +177,7 @@ class ProxyGenerator
                 UpdateBuilderInterface::class,
                 DocumentManagerAwareInterface::class,
                 Unserializable::class,
+                WriteModelInterface::class,
             ];
         } else {
             $this->classGenerator->addTrait('ProxyTrait');

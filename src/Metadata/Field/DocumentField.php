@@ -59,7 +59,7 @@ class DocumentField extends AbstractFieldMetadata
 isset($dbData['_pathInDocument']) || $dbData['_pathInDocument'] = $this->getPathInDocument('{{dbField}}');
 $objectData = null === $dbData 
     ? null 
-    : \Tequila\MongoDB\applyTypeMap($dbData, [
+    : \MongoDB\apply_type_map_to_document($dbData, [
         'root' => {{proxyClass}}::class, 
         'document' => 'array'
     ]);
