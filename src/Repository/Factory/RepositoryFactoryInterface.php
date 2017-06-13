@@ -1,14 +1,17 @@
 <?php
 
-namespace Tequila\MongoDB\ODM;
+namespace Tequila\MongoDB\ODM\Repository\Factory;
 
-interface DocumentRepositoryFactoryInterface
+use Tequila\MongoDB\ODM\DocumentManager;
+use Tequila\MongoDB\ODM\Repository\Repository;
+
+interface RepositoryFactoryInterface
 {
     /**
      * @param DocumentManager $documentManager
      * @param string          $documentClass
      *
-     * @return DocumentRepository
+     * @return Repository
      */
     public function getDocumentRepository(DocumentManager $documentManager, $documentClass);
 }

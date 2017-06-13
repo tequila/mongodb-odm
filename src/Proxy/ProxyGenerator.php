@@ -4,10 +4,14 @@ namespace Tequila\MongoDB\ODM\Proxy;
 
 use MongoDB\BSON\Unserializable;
 use Tequila\MongoDB\ODM\DocumentManagerAwareInterface;
+use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
+use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
 use Tequila\MongoDB\ODM\Exception\LogicException;
-use Tequila\MongoDB\ODM\DocumentMetadata;
+use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
+use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
 use Tequila\MongoDB\ODM\Proxy\Traits\ProxyTrait;
 use Tequila\MongoDB\ODM\Proxy\Traits\RootDocumentTrait;
+use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
@@ -16,7 +20,7 @@ use Zend\Code\Reflection\ClassReflection;
 class ProxyGenerator
 {
     /**
-     * @var DocumentMetadata
+     * @var ClassMetadata
      */
     private $metadata;
 
@@ -28,17 +32,17 @@ class ProxyGenerator
     /**
      * @var ClassGenerator
      */
-    private $documentClassGenerator;
+    private $classGenerator;
 
     /**
-     * @var ClassGenerator
-     */
-    private $proxyClassGenerator;
-
-    /**
-     * @var ProxyGeneratorFactory
+     * @var GeneratorFactory
      */
     private $factory;
+
+    /**
+     * @var MetadataFactoryInterface
+     */
+    private $metadataFactory;
 
     /**
      * @var array
@@ -46,31 +50,48 @@ class ProxyGenerator
     private $errors = [];
 
     /**
-     * @param DocumentMetadata      $metadata
-     * @param ProxyGeneratorFactory $factory
+     * @var
      */
-    public function __construct(DocumentMetadata $metadata, ProxyGeneratorFactory $factory)
-    {
+    private $isRoot;
+
+    /**
+     * @param string                   $documentClass
+     * @param MetadataFactoryInterface $metadataFactory
+     * @param GeneratorFactory         $factory
+     * @param string                   $proxyNamespace
+     * @param bool                     $isRoot
+     */
+    public function __construct(
+        string $documentClass,
+        MetadataFactoryInterface $metadataFactory,
+        GeneratorFactory $factory,
+        string $proxyNamespace,
+        bool $isRoot = true
+    ) {
+        $metadata = $metadataFactory->getClassMetadata($documentClass);
+
         $this->metadata = $metadata;
+        $this->metadataFactory = $metadataFactory;
         $this->factory = $factory;
         $this->reflection = new ClassReflection($metadata->getDocumentClass());
-        $this->documentClassGenerator = ClassGenerator::fromReflection($this->reflection);
-        $this->proxyClassGenerator = new ClassGenerator();
-        $this->proxyClassGenerator->addUse($metadata->getDocumentClass());
-        $this->proxyClassGenerator->setExtendedClass($metadata->getDocumentClass());
-    }
+        if ('' === $proxyNamespace || '\\' === $proxyNamespace) {
+            throw new InvalidArgumentException('$proxyNamespace cannot be empty.');
+        }
+        $this->proxyNamespace = trim($proxyNamespace, '\\');
+        $this->isRoot = $isRoot;
 
-    public function addError(string $error)
-    {
-        $this->errors = $error;
+        $this->classGenerator = new ClassGenerator($this->getProxyClass());
+        $this->classGenerator->addUse($metadata->getDocumentClass());
+        $this->classGenerator->setExtendedClass($metadata->getDocumentClass());
     }
 
     /**
-     * @return DocumentMetadata
+     * @param string      $use
+     * @param string|null $useAlias
      */
-    public function getMetadata()
+    public function addUse(string $use, string $useAlias = null)
     {
-        return $this->metadata;
+        $this->classGenerator->addUse($use, $useAlias);
     }
 
     /**
@@ -82,9 +103,52 @@ class ProxyGenerator
     }
 
     /**
+     * @return string
+     */
+    public function getProxyClass(): string
+    {
+        $suffix = $this->isRoot ? 'RootProxy' : 'NestedProxy';
+        $proxyClassName = $this->getDocumentClass().$suffix;
+
+        return $this->proxyNamespace.'\\'.$proxyClassName;
+    }
+
+    /**
+     * @return GeneratorFactory
+     */
+    public function getFactory(): GeneratorFactory
+    {
+        return $this->factory;
+    }
+
+    /**
+     * @return MetadataFactoryInterface
+     */
+    public function getMetadataFactory(): MetadataFactoryInterface
+    {
+        return $this->metadataFactory;
+    }
+
+    /**
+     * @param string $error
+     */
+    public function addError(string $error)
+    {
+        $this->errors[] = $error;
+    }
+
+    /**
+     * @return ClassMetadata
+     */
+    public function getMetadata(): ClassMetadata
+    {
+        return $this->metadata;
+    }
+
+    /**
      * @return ClassReflection
      */
-    public function getReflection()
+    public function getDocumentReflection(): ClassReflection
     {
         return $this->reflection;
     }
@@ -94,62 +158,55 @@ class ProxyGenerator
      */
     public function addMethod(MethodGenerator $method)
     {
-        $this->proxyClassGenerator->addMethodFromGenerator($method);
+        $this->classGenerator->addMethodFromGenerator($method);
     }
 
     /**
-     * @param bool $asRootDocument
-     *
      * @return ClassGenerator
      */
-    public function generateClass(bool $asRootDocument = true): ClassGenerator
+    public function generateClass(): ClassGenerator
     {
-        if ($asRootDocument) {
-            $this->proxyClassGenerator->addTrait('RootDocumentTrait');
-            $this->proxyClassGenerator->addUse(RootDocumentTrait::class);
-            $this->proxyClassGenerator->setImplementedInterfaces([
-                RootDocumentInterface::class,
-                ProxyInterface::class,
-                UpdateBuilderInterface::class,
+        if ($this->isRoot) {
+            $this->classGenerator->addTrait('RootDocumentTrait');
+            $this->classGenerator->addUse(RootDocumentTrait::class);
+            $interfaces = [
                 MongoIdAwareInterface::class,
+                RootProxyInterface::class,
+                NestedProxyInterface::class,
+                UpdateBuilderInterface::class,
                 DocumentManagerAwareInterface::class,
                 Unserializable::class,
-            ]);
+            ];
         } else {
-            $this->proxyClassGenerator->addTrait('ProxyTrait');
-            $this->proxyClassGenerator->addUse(ProxyTrait::class);
-            $this->proxyClassGenerator->setImplementedInterfaces([
-                ProxyInterface::class,
+            $this->classGenerator->addTrait('ProxyTrait');
+            $this->classGenerator->addUse(ProxyTrait::class);
+            $interfaces = [
+                NestedProxyInterface::class,
                 Unserializable::class,
-            ]);
+            ];
         }
 
-        $this->proxyClassGenerator->addUse(CurrentRootDocument::class);
+        foreach ($interfaces as $interface) {
+            $this->classGenerator->addUse($interface);
+        }
+        $this->classGenerator->setImplementedInterfaces($interfaces);
+
+        $this->classGenerator->addUse(CurrentRootDocument::class);
 
         $unserializeMethod = new MethodGenerator('bsonUnserialize');
         $unserializeMethod->setParameter(new ParameterGenerator('dbData', 'array'));
 
         foreach ($this->metadata->getFieldsMetadata() as $fieldMetadata) {
-            if (method_exists($fieldMetadata, 'setProxyGeneratorFactory')) {
-                $fieldMetadata->setProxyGeneratorFactory($this->factory);
-            }
             $fieldMetadata->generateProxy($this);
         }
 
-        $this->generateBsonUnserializeMethod($asRootDocument);
+        $this->generateBsonUnserializeMethod();
+        $this->generateGetMongoIdMethod();
 
-        return $this->proxyClassGenerator;
+        return $this->classGenerator;
     }
 
-    /**
-     * @return ClassGenerator
-     */
-    public function getProxyClassGenerator(): ClassGenerator
-    {
-        return $this->proxyClassGenerator;
-    }
-
-    private function generateBsonUnserializeMethod(bool $asRootDocument = true)
+    private function generateBsonUnserializeMethod()
     {
         if (!$this->reflection->hasMethod('bsonUnserialize')) {
             throw new LogicException(
@@ -164,9 +221,9 @@ class ProxyGenerator
             new ParameterGenerator('dbData', 'array'),
         ]);
 
-        $this->proxyClassGenerator->addUse(CurrentRootDocument::class);
+        $this->classGenerator->addUse(CurrentRootDocument::class);
 
-        $methodBody = $asRootDocument
+        $methodBody = $this->isRoot
             ? 'CurrentRootDocument::$value = $this;'
             : '$this->rootDocument = CurrentRootDocument::$value;'.PHP_EOL.'$this->extractPathInDocument($dbData);'
         ;
@@ -193,17 +250,49 @@ class ProxyGenerator
     {
         $lines = [];
         foreach ($this->metadata->getFieldsMetadata() as $fieldMetadata) {
-            $lines[] = "'{$fieldMetadata->getDbFieldName()}' => {$fieldMetadata->getPropertyDefaultValue()}";
+            $lines[] = "'{$fieldMetadata->getDbFieldName()}' => null,";
         }
 
         $code = <<<'EOT'
 $defaults = [
-    %s
+%s
 ]; 
 $dbData += $defaults;
 $objectData = [];
 EOT;
 
-        return sprintf($code, implode(",\n", $lines));
+        return sprintf($code, implode("    \n", $lines));
+    }
+
+    private function generateGetMongoIdMethod()
+    {
+        if (!$this->reflection->hasMethod('getMongoId')) {
+            $pkField = $this->metadata->getPrimaryKeyField();
+            $propertyName = $pkField->getPropertyName();
+            if (
+                $this->reflection->hasProperty($propertyName)
+                && !$this->reflection->getProperty($propertyName)->isPrivate()
+            ) {
+                $mongoIdCode = 'return $this->'.$propertyName.';';
+            } elseif (
+                $this->reflection->hasMethod($methodName = 'get'.StringUtil::camelize($propertyName))
+                && !$this->reflection->getMethod($methodName)->isPrivate()
+            ) {
+                $mongoIdCode = 'return $this->'.$methodName.'();';
+            } else {
+                throw new LogicException(
+                    sprintf(
+                        'Mongo id cannot be retrieved from %s. This class must contain not private property %s or not private method %s()',
+                        $this->getDocumentClass(),
+                        $propertyName,
+                        $methodName
+                    )
+                );
+            }
+
+            $method = new MethodGenerator('getMongoId');
+            $method->setBody($mongoIdCode);
+            $this->classGenerator->addMethodFromGenerator($method);
+        }
     }
 }
