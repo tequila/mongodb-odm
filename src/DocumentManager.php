@@ -84,9 +84,8 @@ class DocumentManager
     public function getBulkWriteBuilder($documentClass)
     {
         $metadata = $this->metadataFactory->getClassMetadata($documentClass);
-        $namespace = $this->database->getDatabaseName().'.'.$metadata->getCollectionName();
 
-        return $this->bulkWriteBuilderFactory->getBulkWriteBuilder($namespace);
+        return $this->bulkWriteBuilderFactory->getBulkWriteBuilder($this, $metadata->getCollectionName());
     }
 
     /**
