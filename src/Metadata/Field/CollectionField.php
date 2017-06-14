@@ -5,7 +5,6 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
-use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
@@ -246,52 +245,25 @@ EOT;
 
         if ($this->itemMetadata instanceof DocumentField) {
             $itemClassName = $this->itemMetadata->getDocumentClass();
-            $itemClassMetadata = $proxyGenerator->getMetadataFactory()->getClassMetadata($itemClassName);
-            $idField = $itemClassMetadata->getPrimaryKeyField();
-            $itemReflection = new \ReflectionClass($itemClassName);
-            if (
-                $itemReflection->hasProperty($idField->getPropertyName())
-                && $itemReflection->getProperty($idField->getPropertyName())->isPublic()
-            ) {
-                $idRetrievingCode = '${{param}}->'.$idField->getPropertyName();
-            } elseif (
-                $itemReflection->hasMethod($getterMethod = 'get'.StringUtil::camelize($idField->getPropertyName()))
-                && $itemReflection->getMethod($getterMethod)->isPublic()
-            ) {
-                $idRetrievingCode = '${{param}}->'.$getterMethod.'()';
-            } else {
-                throw new LogicException(
-                    sprintf(
-                        'Mongo id cannot be retrieved from %s. This class must contain public property %s or public method %s()',
-                        $proxyGenerator->getMetadata()->getDocumentClass(),
-                        $idField->getPropertyName(),
-                        $getterMethod
-                    )
-                );
-            }
-
-            $idRetrievingCode = self::compileCode($idRetrievingCode, ['param' => $paramName]);
 
             $code = <<<'EOT'
 /** @var {{proxyClass}} ${{param}} */
-if (null === {{idRetrievingCode}}) {
+if (null === ${{param}}->getMongoId()) {
     throw new InvalidArgumentException(
-        'Cannot remove new {{itemClass}} instance using {{documentClass}}::{{method}}(), {{itemClass}} instance must have an id.'
+        'Attempt to remove new {{itemClass}} instance. ${{param}} must have an id to be removed.'
     );
 }
 
 parent::{{method}}(${{param}});
 $this->getRootDocument()->pull(
     $this->getPathInDocument('{{dbField}}'), 
-    ['_id' => {{idRetrievingCode}}]
+    ['_id' => ${{param}}->getMongoId()]
 );
 EOT;
             $proxyClass = $proxyGenerator->getFactory()->getGenerator($itemClassName, false)->getProxyClass();
             $proxyClassParts = explode('\\', $proxyClass);
             $params['proxyClass'] = end($proxyClassParts);
-            $params['documentClass'] = $proxyGenerator->getDocumentClass();
             $params['itemClass'] = $this->itemMetadata->getDocumentClass();
-            $params['idRetrievingCode'] = $idRetrievingCode;
         } else {
             $code = <<<'EOT'
 parent::{{method}}(${{param}});

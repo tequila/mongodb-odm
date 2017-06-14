@@ -11,7 +11,6 @@ use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
 use Tequila\MongoDB\ODM\Proxy\Traits\ProxyTrait;
 use Tequila\MongoDB\ODM\Proxy\Traits\RootDocumentTrait;
-use Tequila\MongoDB\ODM\Util\StringUtil;
 use Tequila\MongoDB\ODM\WriteModelInterface;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
@@ -171,12 +170,10 @@ class ProxyGenerator
             $this->classGenerator->addTrait('RootDocumentTrait');
             $this->classGenerator->addUse(RootDocumentTrait::class);
             $interfaces = [
-                MongoIdAwareInterface::class,
                 RootProxyInterface::class,
                 NestedProxyInterface::class,
                 UpdateBuilderInterface::class,
                 DocumentManagerAwareInterface::class,
-                Unserializable::class,
                 WriteModelInterface::class,
             ];
         } else {
@@ -203,7 +200,6 @@ class ProxyGenerator
         }
 
         $this->generateBsonUnserializeMethod();
-        $this->generateGetMongoIdMethod();
 
         return $this->classGenerator;
     }
@@ -264,37 +260,5 @@ $objectData = [];
 EOT;
 
         return sprintf($code, implode("    \n", $lines));
-    }
-
-    private function generateGetMongoIdMethod()
-    {
-        if (!$this->reflection->hasMethod('getMongoId')) {
-            $pkField = $this->metadata->getPrimaryKeyField();
-            $propertyName = $pkField->getPropertyName();
-            if (
-                $this->reflection->hasProperty($propertyName)
-                && !$this->reflection->getProperty($propertyName)->isPrivate()
-            ) {
-                $mongoIdCode = 'return $this->'.$propertyName.';';
-            } elseif (
-                $this->reflection->hasMethod($methodName = 'get'.StringUtil::camelize($propertyName))
-                && !$this->reflection->getMethod($methodName)->isPrivate()
-            ) {
-                $mongoIdCode = 'return $this->'.$methodName.'();';
-            } else {
-                throw new LogicException(
-                    sprintf(
-                        'Mongo id cannot be retrieved from %s. This class must contain not private property %s or not private method %s()',
-                        $this->getDocumentClass(),
-                        $propertyName,
-                        $methodName
-                    )
-                );
-            }
-
-            $method = new MethodGenerator('getMongoId');
-            $method->setBody($mongoIdCode);
-            $this->classGenerator->addMethodFromGenerator($method);
-        }
     }
 }

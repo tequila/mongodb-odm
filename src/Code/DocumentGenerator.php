@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Code;
 
-use MongoDB\BSON\Serializable;
+use Tequila\MongoDB\ODM\DocumentInterface;
 use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\UnserializableTrait;
 use Zend\Code\Generator\ClassGenerator;
@@ -43,6 +43,9 @@ class DocumentGenerator
         $this->classGenerator = $this->fileGenerator->getClass($this->reflection->getShortName());
     }
 
+    /**
+     * @param PropertyGenerator $property
+     */
     public function addProperty(PropertyGenerator $property)
     {
         if (!$this->classGenerator->hasProperty($property->getName())) {
@@ -50,6 +53,9 @@ class DocumentGenerator
         }
     }
 
+    /**
+     * @param MethodGenerator $method
+     */
     public function addMethod(MethodGenerator $method)
     {
         if (!$this->classGenerator->hasMethod($method->getName())) {
@@ -68,8 +74,8 @@ class DocumentGenerator
 
     public function generateClass(): void
     {
-        $this->classGenerator->addUse(Serializable::class);
-        $this->classGenerator->setImplementedInterfaces([Serializable::class]);
+        $this->classGenerator->addUse(DocumentInterface::class);
+        $this->classGenerator->setImplementedInterfaces([DocumentInterface::class]);
         $this->classGenerator->addTrait('UnserializableTrait');
         $this->classGenerator->addUse(UnserializableTrait::class);
         if ($this->classGenerator->hasMethod('bsonSerialize')) {
@@ -81,6 +87,7 @@ class DocumentGenerator
         }
 
         $this->classGenerator->addMethodFromGenerator($this->generateBsonSerializeMethod());
+        $this->generateGetMongoIdMethod();
 
         $code = $this->fileGenerator->generate();
         file_put_contents($this->reflection->getFileName(), $code);
@@ -106,5 +113,16 @@ class DocumentGenerator
         $method->setBody($methodBody);
 
         return $method;
+    }
+
+    private function generateGetMongoIdMethod()
+    {
+        if (!$this->reflection->hasMethod('getMongoId')) {
+            $pkField = $this->metadata->getPrimaryKeyField();
+
+            $method = new MethodGenerator('getMongoId');
+            $method->setBody('return $this->'.$pkField->getPropertyName().';');
+            $this->classGenerator->addMethodFromGenerator($method);
+        }
     }
 }
