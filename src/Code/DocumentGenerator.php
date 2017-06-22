@@ -88,6 +88,10 @@ class DocumentGenerator
 
         $this->classGenerator->addMethodFromGenerator($this->generateBsonSerializeMethod());
         $this->generateGetMongoIdMethod();
+        if ($this->classGenerator->hasMethod('bsonUnserialize')) {
+            // Workaround for zend/code lib bug with generating methods provided by traits
+            $this->classGenerator->removeMethod('bsonUnserialize');
+        }
 
         $code = $this->fileGenerator->generate();
         file_put_contents($this->reflection->getFileName(), $code);
@@ -117,7 +121,7 @@ class DocumentGenerator
 
     private function generateGetMongoIdMethod()
     {
-        if (!$this->reflection->hasMethod('getMongoId')) {
+        if (!$this->classGenerator->hasMethod('getMongoId')) {
             $pkField = $this->metadata->getPrimaryKeyField();
 
             $method = new MethodGenerator('getMongoId');

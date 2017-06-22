@@ -7,7 +7,7 @@ use Tequila\MongoDB\ODM\Proxy\RootProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\UpdateBuilderInterface;
 use Tequila\MongoDB\ODM\WriteModelInterface;
 
-trait RootDocumentTrait
+trait RootProxyTrait
 {
     use DocumentManagerAwareTrait;
     use UpdateBuilderTrait;
@@ -21,7 +21,7 @@ trait RootDocumentTrait
     /**
      * @return RootProxyInterface|$this
      */
-    public function getRootDocument(): RootProxyInterface
+    public function getRootProxy(): RootProxyInterface
     {
         /* @var RootProxyInterface $this */
         return $this;

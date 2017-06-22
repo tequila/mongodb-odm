@@ -117,8 +117,8 @@ class SerializationUnserializationTest extends TestCase
         $this->assertSame((string) $blogPostSerialized['_author']['_id'], (string) $author->getId());
         $this->assertSame($blogPostSerialized['_author']['first_name'], $author->getFirstName());
         $this->assertSame($blogPostSerialized['_author']['last_name'], $author->getLastName());
-        $this->assertSame($blogPostSerialized['_author']['_emails'], $author->getEmails());
-        $this->assertSame($blogPost, $author->getRootDocument());
+        $this->assertSame($blogPostSerialized['_author']['_emails'], iterator_to_array($author->getEmails()));
+        $this->assertSame($blogPost, $author->getRootProxy());
 
         /** @var Comment[]|NestedProxyInterface[] $comments */
         $comments = $blogPost->getComments();
@@ -130,15 +130,15 @@ class SerializationUnserializationTest extends TestCase
             $this->assertSame((string) $commentsSerialized[$i]['_id'], (string) $comments[$i]->getId());
             $this->assertSame($commentsSerialized[$i]['_content'], $comments[$i]->getContent());
             $this->assertInstanceOf(DateTime::class, $comments[$i]->getCreatedAt());
-            $this->assertSame($blogPost, $comments[$i]->getRootDocument());
+            $this->assertSame($blogPost, $comments[$i]->getRootProxy());
 
             $author = $comments[$i]->getAuthor();
             $this->assertInstanceOf($authorProxyClass, $author);
             $this->assertSame((string) $commentsSerialized[$i]['_author']['_id'], (string) $author->getId());
             $this->assertSame($commentsSerialized[$i]['_author']['first_name'], $author->getFirstName());
             $this->assertSame($commentsSerialized[$i]['_author']['last_name'], $author->getLastName());
-            $this->assertSame($commentsSerialized[$i]['_author']['_emails'], $author->getEmails());
-            $this->assertSame($blogPost, $author->getRootDocument());
+            $this->assertSame($commentsSerialized[$i]['_author']['_emails'], iterator_to_array($author->getEmails()));
+            $this->assertSame($blogPost, $author->getRootProxy());
         }
 
         return $blogPost;

@@ -4,6 +4,7 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
+use Tequila\MongoDB\ODM\Proxy\NestedProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 
 class DocumentField extends AbstractFieldMetadata
@@ -46,6 +47,7 @@ class DocumentField extends AbstractFieldMetadata
     {
         $proxyGenerator->addUse($this->getDocumentProxyClass($proxyGenerator));
         $proxyGenerator->addUse($this->documentClass);
+        $proxyGenerator->addUse(NestedProxyInterface::class);
 
         parent::generateProxy($proxyGenerator);
     }
@@ -56,22 +58,23 @@ class DocumentField extends AbstractFieldMetadata
     public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
     {
         $code = <<<'EOT'
-isset($dbData['_pathInDocument']) || $dbData['_pathInDocument'] = $this->getPathInDocument('{{dbField}}');
 $objectData = null === $dbData 
     ? null 
     : \MongoDB\apply_type_map_to_document($dbData, [
         'root' => {{proxyClass}}::class, 
         'document' => 'array'
     ]);
+if ($objectData instanceof NestedProxyInterface) {
+    $objectData->setPathInDocument($pathInDocument);
+    $objectData->setRootProxy($rootProxy);
+    $objectData->doBsonUnserialize();
+}
 EOT;
 
         $proxyClass = $this->getDocumentProxyClass($proxyGenerator);
         $proxyShortName = substr($proxyClass, strrpos($proxyClass, '\\'));
 
-        return self::compileCode($code, [
-            'dbField' => $this->dbFieldName,
-            'proxyClass' => ltrim($proxyShortName, '\\'),
-        ]);
+        return self::compileCode($code, ['proxyClass' => ltrim($proxyShortName, '\\')]);
     }
 
     protected function createProperty(): PropertyGenerator

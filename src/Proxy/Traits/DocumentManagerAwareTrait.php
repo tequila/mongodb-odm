@@ -14,7 +14,7 @@ trait DocumentManagerAwareTrait
     /**
      * @param DocumentManager $documentManager
      */
-    public function setDocumentManager(DocumentManager $documentManager): void
+    public function setManager(DocumentManager $documentManager): void
     {
         $this->documentManager = $documentManager;
     }

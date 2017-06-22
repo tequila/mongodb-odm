@@ -4,7 +4,9 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
+use Tequila\MongoDB\ODM\DocumentInterface;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
+use Tequila\MongoDB\ODM\Proxy\AbstractCollection;
 use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
@@ -36,32 +38,72 @@ class CollectionField extends AbstractFieldMetadata
             $documentGenerator->addUse($this->itemMetadata->getDocumentClass());
         }
 
-        $collectionItemParam = new ParameterGenerator(
-            StringUtil::camelize($this->itemMetadata->getPropertyName(), false)
-        );
-        $collectionItemParam->setType($this->itemMetadata->getType());
+        $camelizedItemPropertyName = StringUtil::camelize($this->itemMetadata->getPropertyName());
+        $adderParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName));
+        $adderParam->setType($this->itemMetadata->getType());
 
-        $adder = new MethodGenerator('add'.StringUtil::camelize($this->itemMetadata->getPropertyName()));
-        $adder->setParameter($collectionItemParam);
+        $adder = new MethodGenerator('add'.$camelizedItemPropertyName);
+        $adder->setParameter($adderParam);
         $adder->setBody(
-            sprintf('$this->%s[] = $%s;', $this->getPropertyName(), $collectionItemParam->getName())
+            sprintf('$this->%s[] = $%s;', $this->getPropertyName(), $adderParam->getName())
         );
 
-        $remover = new MethodGenerator('remove'.StringUtil::camelize($this->itemMetadata->getPropertyName()));
-        $remover->setParameter($collectionItemParam);
-        $removerBody = <<<'EOT'
-foreach ($this->{{property}} as $key => $item) {
-    if (${{param}} === $item) {
+        $remover = new MethodGenerator('remove'.$camelizedItemPropertyName);
+        $removerParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName).'ToRemove');
+        $remover->setParameter($removerParam);
+        if ($this->itemMetadata instanceof DocumentField) {
+            $removerBody = <<<'EOT'
+foreach ($this->{{property}} as $key => ${{item}}) {
+    if (${{param}} === ${{item}} || ${{param}} === ${{item}}->getMongoId()) {
         $this->{{property}}[$key] = null;
     }
 }
 EOT;
+        } else {
+            $removerBody = <<<'EOT'
+foreach ($this->{{property}} as $key => ${{item}}) {
+    if (${{param}} === ${{item}}) {
+        $this->{{property}}[$key] = null;
+    }
+}
+EOT;
+        }
+
         $removerBody = self::compileCode($removerBody, [
             'property' => $this->getPropertyName(),
-            'param' => $collectionItemParam->getName(),
+            'param' => $removerParam->getName(),
+            'item' => lcfirst($camelizedItemPropertyName),
         ]);
 
         $remover->setBody($removerBody);
+
+        if ($this->itemMetadata instanceof DocumentField) {
+            $itemGetter = new MethodGenerator('get'.$camelizedItemPropertyName);
+            $itemGetterParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName).'Id');
+            $itemGetter->setParameter($itemGetterParam);
+            $itemGetter->setReturnType($this->itemMetadata->getType());
+            $itemGetterBody = <<<'EOT'
+foreach ($this->{{property}} as ${{item}}) {
+    if (${{item}}->getMongoId() === ${{param}}) {
+        return ${{item}};
+    }
+}
+
+throw new InvalidArgumentException(
+    sprintf('{{itemAlias}} with primary key "%s" is not found.', (string) ${{param}})
+);
+EOT;
+            $documentGenerator->addUse(InvalidArgumentException::class);
+            $itemGetterBody = self::compileCode($itemGetterBody, [
+                'property' => $this->getPropertyName(),
+                'param' => $itemGetterParam->getName(),
+                'item' => lcfirst($camelizedItemPropertyName),
+                'itemAlias' => $camelizedItemPropertyName,
+            ]);
+            $itemGetter->setBody($itemGetterBody);
+
+            $documentGenerator->addMethod($itemGetter);
+        }
 
         $documentGenerator->addMethod($adder);
         $documentGenerator->addMethod($remover);
@@ -72,6 +114,7 @@ EOT;
     public function generateProxy(ProxyGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(InvalidArgumentException::class);
+        $proxyGenerator->addUse(AbstractCollection::class);
         if ($this->itemMetadata instanceof DocumentField) {
             $proxyGenerator->addUse($this->itemMetadata->getDocumentClass());
         }
@@ -84,7 +127,7 @@ EOT;
 
     public function getType(): string
     {
-        return 'array';
+        return 'iterable';
     }
 
     public function getSerializationCode(): string
@@ -109,37 +152,32 @@ EOT;
 
     public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
     {
+        $code = <<<'EOT'
+$objectData = new class($dbData, $rootProxy, $pathInDocument) extends AbstractCollection {
+
+    public function offsetGet($index)
+    {
+        static $unserializedDocuments = [];
+        if (!array_key_exists($index, $unserializedDocuments)) {
+            {{itemUnserializationCode}}
+
+            $unserializedDocuments[$index] = null;
+        }
+        
+        return $this->array[$index];
+    }
+};
+EOT;
+
         $itemUnserializationCode = $this->itemMetadata->getUnserializationCode($proxyGenerator);
         $itemUnserializationCode = strtr($itemUnserializationCode, [
-            '$dbData' => '$item',
-            '$objectData' => '$unserializedItem',
+            '$dbData' => '$this->array[$index]',
+            '$objectData' => '$this->array[$index]',
+            '$pathInDocument' => '$this->path.\'.\'.$index',
+            '$rootProxy' => '$this->root',
         ]);
 
-        if ($this->itemMetadata instanceof DocumentField) {
-            $code = <<<'EOT'
-$dbData = (array) $dbData;
-$objectData = [];
-foreach ($dbData as $key => $item) {
-    $item['_pathInDocument'] = $this->getPathInDocument('{{dbField}}').'.'.$key;
-    {{itemUnserializationCode}}
-    $objectData[$key] = $unserializedItem;
-}
-EOT;
-        } else {
-            $code = <<<'EOT'
-$dbData = (array) $dbData;
-$objectData = [];
-foreach ($dbData as $key => $item) {
-    {{itemUnserializationCode}}
-    $objectData[$key] = $unserializedItem;
-}
-EOT;
-        }
-
-        return self::compileCode($code, [
-            'itemUnserializationCode' => $itemUnserializationCode,
-            'dbField' => $this->dbFieldName,
-        ]);
+        return self::compileCode($code, ['itemUnserializationCode' => $itemUnserializationCode]);
     }
 
     protected function createProperty(): PropertyGenerator
@@ -154,7 +192,7 @@ EOT;
         $itemType = $this->itemMetadata instanceof DocumentField
             ? ('\\'.ltrim($this->itemMetadata->getDocumentClass(), '\\'))
             : $this->itemMetadata->getType();
-        $property->setDocBlock('@var '.$itemType.'[]');
+        $property->setDocBlock('@var '.$itemType.'[]|iterable');
 
         return $property;
     }
@@ -194,7 +232,7 @@ EOT;
 
         $code = <<<'EOT'
 parent::{{method}}(${{param}});
-$this->getRootDocument()->push($this->getPathInDocument('{{dbField}}'), ${{param}});
+$this->getRootProxy()->push($this->getPathInDocument('{{dbField}}'), ${{param}});
 EOT;
 
         $params += [
@@ -246,18 +284,12 @@ EOT;
         if ($this->itemMetadata instanceof DocumentField) {
             $itemClassName = $this->itemMetadata->getDocumentClass();
 
+            $proxyGenerator->addUse(DocumentInterface::class);
             $code = <<<'EOT'
-/** @var {{proxyClass}} ${{param}} */
-if (null === ${{param}}->getMongoId()) {
-    throw new InvalidArgumentException(
-        'Attempt to remove new {{itemClass}} instance. ${{param}} must have an id to be removed.'
-    );
-}
-
 parent::{{method}}(${{param}});
-$this->getRootDocument()->pull(
+$this->getRootProxy()->pull(
     $this->getPathInDocument('{{dbField}}'), 
-    ['_id' => ${{param}}->getMongoId()]
+    ${{param}} instanceof DocumentInterface ? ['_id' => ${{param}}->getMongoId()] : ${{param}}
 );
 EOT;
             $proxyClass = $proxyGenerator->getFactory()->getGenerator($itemClassName, false)->getProxyClass();
@@ -267,7 +299,7 @@ EOT;
         } else {
             $code = <<<'EOT'
 parent::{{method}}(${{param}});
-$this->getRootDocument()->pull($this->getPathInDocument('{{dbField}}'), ${{param}});
+$this->getRootProxy()->pull($this->getPathInDocument('{{dbField}}'), ${{param}});
 EOT;
         }
 

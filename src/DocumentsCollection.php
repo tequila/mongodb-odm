@@ -36,7 +36,7 @@ class DocumentsCollection implements Iterator
     /**
      * @var string|int
      */
-    private $currentKey;
+    private $currentKey = false;
 
     /**
      * @var DocumentManagerAwareInterface
@@ -71,7 +71,7 @@ class DocumentsCollection implements Iterator
 
         /** @var DocumentManagerAwareInterface $document */
         $document = $this->generator->current();
-        $document->setDocumentManager($this->documentManager);
+        $document->setManager($this->documentManager);
         $this->currentDocument = $document;
         $this->currentKey = $key;
 

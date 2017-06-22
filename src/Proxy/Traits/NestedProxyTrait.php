@@ -5,14 +5,14 @@ namespace Tequila\MongoDB\ODM\Proxy\Traits;
 use Tequila\MongoDB\ODM\Proxy\RootProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\UpdateBuilderInterface;
 
-trait ProxyTrait
+trait NestedProxyTrait
 {
     use RealClassTrait;
 
     /**
      * @var RootProxyInterface
      */
-    private $rootDocument;
+    private $rootProxy;
 
     /**
      * @var string
@@ -20,11 +20,24 @@ trait ProxyTrait
     private $pathInDocument;
 
     /**
+     * @var array
+     */
+    private $_mongoDbData;
+
+    /**
      * @return RootProxyInterface|UpdateBuilderInterface
      */
-    public function getRootDocument(): RootProxyInterface
+    public function getRootProxy(): RootProxyInterface
     {
-        return $this->rootDocument;
+        return $this->rootProxy;
+    }
+
+    /**
+     * @param RootProxyInterface $rootProxy
+     */
+    public function setRootProxy(RootProxyInterface $rootProxy)
+    {
+        $this->rootProxy = $rootProxy;
     }
 
     /**
@@ -38,10 +51,15 @@ trait ProxyTrait
     }
 
     /**
-     * @param array $data
+     * @param string $pathInDocument
      */
-    public function extractPathInDocument(array $data)
+    public function setPathInDocument(string $pathInDocument)
     {
-        $this->pathInDocument = $data['_pathInDocument'];
+        $this->pathInDocument = $pathInDocument;
+    }
+
+    public function bsonUnserialize(array $data)
+    {
+        $this->_mongoDbData = $data;
     }
 }

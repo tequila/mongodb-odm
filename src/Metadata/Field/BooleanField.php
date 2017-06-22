@@ -2,8 +2,10 @@
 
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
+use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
 use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 
 class BooleanField extends AbstractFieldMetadata
@@ -22,6 +24,25 @@ class BooleanField extends AbstractFieldMetadata
     {
         $this->defaultValue = $defaultValue;
         parent::__construct($propertyName, $dbFieldName);
+    }
+
+    public function generateDocument(DocumentGenerator $documentGenerator)
+    {
+        $normalizedPropertyName = 'is' === substr($this->propertyName, 0, 2)
+            ? substr($this->propertyName, 2)
+            : $this->propertyName;
+
+        $normalizedPropertyName = StringUtil::camelize($normalizedPropertyName);
+        $isser = new MethodGenerator('is'.$normalizedPropertyName);
+        $isser->setBody('return $this->'.$this->propertyName.';');
+        $isser->setReturnType(null === $this->defaultValue ? '?bool' : 'bool');
+
+        $setter = $this->createSetter();
+        $setter->setName(str_replace('setIs', 'set', $setter->getName()));
+
+        $documentGenerator->addProperty($this->createProperty());
+        $documentGenerator->addMethod($isser);
+        $documentGenerator->addMethod($setter);
     }
 
     public function getType(): string
@@ -45,13 +66,5 @@ class BooleanField extends AbstractFieldMetadata
         $property->setDefaultValue($this->defaultValue);
 
         return $property;
-    }
-
-    protected function createGetter(): MethodGenerator
-    {
-        $getter = parent::createGetter();
-        $getter->setReturnType(null === $this->defaultValue ? '?bool' : 'bool');
-
-        return $getter;
     }
 }

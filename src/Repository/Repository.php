@@ -98,7 +98,7 @@ class Repository
         $document = $this->getCollection()->findOneAndDelete($filter, $options);
         if (null !== $document) {
             /* @var DocumentManagerAwareInterface $document */
-            $document->setDocumentManager($this->documentManager);
+            $document->setManager($this->documentManager);
         }
 
         return $document;
@@ -121,7 +121,7 @@ class Repository
         $document = $this->getCollection()->findOneAndUpdate($filter, $update, $options);
         if (null !== $document) {
             /* @var DocumentManagerAwareInterface $document */
-            $document->setDocumentManager($this->documentManager);
+            $document->setManager($this->documentManager);
         }
 
         return $document;
@@ -144,7 +144,7 @@ class Repository
         $document = $this->getCollection()->findOneAndReplace($filter, $replacement, $options);
         if (null !== $document) {
             /* @var DocumentManagerAwareInterface $document */
-            $document->setDocumentManager($this->documentManager);
+            $document->setManager($this->documentManager);
         }
 
         return $document;

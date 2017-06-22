@@ -2,13 +2,37 @@
 
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
+use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
+use Zend\Code\Generator\ParameterGenerator;
 
 trait IncreaserDecreaserTrait
 {
-    protected function generateIncreaser(ProxyGenerator $proxyGenerator)
+    protected function generateIncreaser(DocumentGenerator $documentGenerator)
+    {
+        $paramName = StringUtil::camelize($this->getPropertyName(), false);
+        $method = new MethodGenerator('increase'.ucfirst($paramName));
+        $param = new ParameterGenerator($paramName, $this->getType());
+        $method->setParameter($param);
+        $body = sprintf('$this->%s += abs($%s);', $this->getPropertyName(), $paramName);
+        $method->setBody($body);
+        $documentGenerator->addMethod($method);
+    }
+
+    protected function generateDecreaser(DocumentGenerator $documentGenerator)
+    {
+        $paramName = StringUtil::camelize($this->getPropertyName(), false);
+        $method = new MethodGenerator('decrease'.ucfirst($paramName));
+        $param = new ParameterGenerator($paramName, $this->getType());
+        $method->setParameter($param);
+        $body = sprintf('$this->%s -= abs($%s);', $this->getPropertyName(), $paramName);
+        $method->setBody($body);
+        $documentGenerator->addMethod($method);
+    }
+
+    protected function generateIncreaserProxy(ProxyGenerator $proxyGenerator)
     {
         $methodName = 'increase'.StringUtil::camelize($this->propertyName);
         if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
@@ -41,7 +65,7 @@ trait IncreaserDecreaserTrait
 
         $code = <<<'EOT'
 parent::{{methodName}}(${{paramName}});
-$this->getRootDocument()->increment($this->getPathInDocument('{{dbFieldName}}'), abs(${{paramName}}));
+$this->getRootProxy()->increment($this->getPathInDocument('{{dbFieldName}}'), abs(${{paramName}}));
 EOT;
         $code = self::compileCode($code, [
             'methodName' => $methodName,
@@ -54,7 +78,7 @@ EOT;
         $proxyGenerator->addMethod($method);
     }
 
-    protected function generateDecreaser(ProxyGenerator $proxyGenerator)
+    protected function generateDecreaserProxy(ProxyGenerator $proxyGenerator)
     {
         $methodName = 'decrease'.StringUtil::camelize($this->propertyName);
         if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
@@ -87,7 +111,7 @@ EOT;
 
         $code = <<<'EOT'
 parent::{{methodName}}(${{paramName}});
-$this->getRootDocument()->increment($this->getPathInDocument('{{dbFieldName}}'), -abs(${{paramName}}));
+$this->getRootProxy()->increment($this->getPathInDocument('{{dbFieldName}}'), -abs(${{paramName}}));
 EOT;
         $code = self::compileCode($code, [
             'methodName' => $methodName,
