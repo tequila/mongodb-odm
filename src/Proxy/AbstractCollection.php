@@ -3,9 +3,10 @@
 namespace Tequila\MongoDB\ODM\Proxy;
 
 use ArrayAccess;
+use Countable;
 use Iterator;
 
-abstract class AbstractCollection implements Iterator, ArrayAccess
+abstract class AbstractCollection implements Iterator, ArrayAccess, Countable
 {
     /**
      * @var array
@@ -32,6 +33,11 @@ abstract class AbstractCollection implements Iterator, ArrayAccess
         $this->array = array_values($array);
         $this->path = $path;
         $this->root = $root;
+    }
+
+    public function count()
+    {
+        return count($this->array);
     }
 
     public function rewind()
