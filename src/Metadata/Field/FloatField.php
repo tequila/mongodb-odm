@@ -3,7 +3,7 @@
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
 class FloatField extends AbstractFieldMetadata
 {
@@ -22,7 +22,7 @@ class FloatField extends AbstractFieldMetadata
         parent::generateDocument($documentGenerator);
     }
 
-    public function generateProxy(ProxyGenerator $proxyGenerator)
+    public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $this->generateIncreaserProxy($proxyGenerator);
         $this->generateDecreaserProxy($proxyGenerator);
@@ -35,7 +35,7 @@ class FloatField extends AbstractFieldMetadata
         return '$dbData = null === $objectData ? null : (float) $objectData;';
     }
 
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         return '$objectData = null === $dbData ? null : (float) $dbData;';
     }

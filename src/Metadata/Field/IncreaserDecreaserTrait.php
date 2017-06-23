@@ -3,7 +3,7 @@
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
@@ -32,7 +32,7 @@ trait IncreaserDecreaserTrait
         $documentGenerator->addMethod($method);
     }
 
-    protected function generateIncreaserProxy(ProxyGenerator $proxyGenerator)
+    protected function generateIncreaserProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'increase'.StringUtil::camelize($this->propertyName);
         if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
@@ -78,7 +78,7 @@ EOT;
         $proxyGenerator->addMethod($method);
     }
 
-    protected function generateDecreaserProxy(ProxyGenerator $proxyGenerator)
+    protected function generateDecreaserProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'decrease'.StringUtil::camelize($this->propertyName);
         if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {

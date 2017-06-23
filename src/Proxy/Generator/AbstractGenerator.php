@@ -1,28 +1,22 @@
 <?php
 
-namespace Tequila\MongoDB\ODM\Proxy;
+namespace Tequila\MongoDB\ODM\Proxy\Generator;
 
-use MongoDB\BSON\Unserializable;
-use Tequila\MongoDB\ODM\DocumentManagerAwareInterface;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
-use Tequila\MongoDB\ODM\Proxy\Traits\NestedProxyTrait;
-use Tequila\MongoDB\ODM\Proxy\Traits\RootProxyTrait;
-use Tequila\MongoDB\ODM\WriteModelInterface;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
-use Zend\Code\Generator\ParameterGenerator;
 use Zend\Code\Reflection\ClassReflection;
 
-class ProxyGenerator
+abstract class AbstractGenerator
 {
     /**
      * @var ClassMetadata
      */
-    private $metadata;
+    protected $metadata;
 
     /**
      * @var ClassReflection
@@ -50,23 +44,37 @@ class ProxyGenerator
     private $errors = [];
 
     /**
-     * @var
+     * @return string
      */
-    private $isRoot;
+    abstract public function getProxyClass(): string;
+
+    /**
+     * @return MethodGenerator
+     */
+    abstract protected function createBsonUnserializeMethod(): MethodGenerator;
+
+    /**
+     * @return string[]
+     */
+    abstract protected function getInterfaces(): array;
+
+    /**
+     * @return string[]
+     */
+    abstract protected function getTraits(): array;
+
 
     /**
      * @param string                   $documentClass
      * @param MetadataFactoryInterface $metadataFactory
      * @param GeneratorFactory         $factory
      * @param string                   $proxyNamespace
-     * @param bool                     $isRoot
      */
     public function __construct(
         string $documentClass,
         MetadataFactoryInterface $metadataFactory,
         GeneratorFactory $factory,
-        string $proxyNamespace,
-        bool $isRoot = true
+        string $proxyNamespace
     ) {
         $metadata = $metadataFactory->getClassMetadata($documentClass);
 
@@ -78,7 +86,6 @@ class ProxyGenerator
             throw new InvalidArgumentException('$proxyNamespace cannot be empty.');
         }
         $this->proxyNamespace = trim($proxyNamespace, '\\');
-        $this->isRoot = $isRoot;
 
         $this->classGenerator = new ClassGenerator($this->getProxyClass());
         $this->classGenerator->addUse($metadata->getDocumentClass());
@@ -100,17 +107,6 @@ class ProxyGenerator
     public function getDocumentClass(): string
     {
         return $this->metadata->getDocumentClass();
-    }
-
-    /**
-     * @return string
-     */
-    public function getProxyClass(): string
-    {
-        $suffix = $this->isRoot ? 'RootProxy' : 'NestedProxy';
-        $proxyClassName = $this->getDocumentClass().$suffix;
-
-        return $this->proxyNamespace.'\\'.$proxyClassName;
     }
 
     /**
@@ -166,30 +162,17 @@ class ProxyGenerator
      */
     public function generateClass(): ClassGenerator
     {
-        if ($this->isRoot) {
-            $this->classGenerator->addTrait('RootProxyTrait');
-            $this->classGenerator->addUse(RootProxyTrait::class);
-            $interfaces = [
-                RootProxyInterface::class,
-                UpdateBuilderInterface::class,
-                DocumentManagerAwareInterface::class,
-                WriteModelInterface::class,
-            ];
-        } else {
-            $this->classGenerator->addTrait('NestedProxyTrait');
-            $this->classGenerator->addUse(NestedProxyTrait::class);
-            $interfaces = [
-                NestedProxyInterface::class,
-                Unserializable::class,
-            ];
-        }
-
+        $interfaces = $this->getInterfaces();
         foreach ($interfaces as $interface) {
             $this->classGenerator->addUse($interface);
         }
         $this->classGenerator->setImplementedInterfaces($interfaces);
 
-        $this->classGenerator->addUse(CurrentRootDocument::class);
+        $traits = $this->getTraits();
+        foreach ($traits as $trait) {
+            $this->classGenerator->addUse($trait);
+            $this->classGenerator->addTrait((new \ReflectionClass($trait))->getShortName());
+        }
 
         foreach ($this->metadata->getFieldsMetadata() as $fieldMetadata) {
             $fieldMetadata->generateProxy($this);
@@ -211,64 +194,6 @@ class ProxyGenerator
             );
         }
 
-        $method = new MethodGenerator($this->isRoot ? 'bsonUnserialize' : 'doBsonUnserialize');
-        if ($this->isRoot) {
-            $method->setParameter(new ParameterGenerator('dbData', 'array'));
-        }
-
-        $methodBody = $this->buildUnserializationDefaultsCode();
-
-        foreach ($this->metadata->getFieldsMetadata() as $field) {
-            $pathInDocument = $this->isRoot
-                ? "'{$field->getDbFieldName()}'"
-                : sprintf('$this->getPathInDocument(\'%s\')', $field->getDbFieldName());
-            $dbDataReplacement = $this->isRoot
-                ? sprintf('$dbData[\'%s\']', $field->getDbFieldName())
-                : sprintf('$this->_mongoDbData[\'%s\']', $field->getDbFieldName());
-
-            $code = strtr($field->getUnserializationCode($this), [
-                '$objectData' => '$objectData[\''.$field->getPropertyName().'\']',
-                '$dbData' => $dbDataReplacement,
-                '$pathInDocument' => $pathInDocument,
-                '$rootProxy' => '$this->getRootProxy()',
-            ]);
-
-            $methodBody .= PHP_EOL.$code;
-        }
-
-        $methodBody .= PHP_EOL.'parent::bsonUnserialize($objectData);';
-        $methodBody .= PHP_EOL.'$this->_mongoDbData = null;';
-
-        $method->setBody($methodBody);
-
-        $this->addMethod($method);
-    }
-
-    private function buildUnserializationDefaultsCode(): string
-    {
-        $lines = [];
-        foreach ($this->metadata->getFieldsMetadata() as $fieldMetadata) {
-            $lines[] = "'{$fieldMetadata->getDbFieldName()}' => null,";
-        }
-
-        if ($this->isRoot) {
-            $code = <<<'EOT'
-$defaults = [
-%s
-]; 
-$dbData += $defaults;
-$objectData = [];
-EOT;
-        } else {
-            $code = <<<'EOT'
-$defaults = [
-%s
-]; 
-$this->_mongoDbData += $defaults;
-$objectData = [];
-EOT;
-        }
-
-        return sprintf($code, implode("    \n", $lines));
+        $this->addMethod($this->createBsonUnserializeMethod());
     }
 }

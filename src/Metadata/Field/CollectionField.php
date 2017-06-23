@@ -7,7 +7,7 @@ use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\DocumentInterface;
 use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Proxy\AbstractCollection;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
@@ -111,7 +111,7 @@ EOT;
         parent::generateDocument($documentGenerator);
     }
 
-    public function generateProxy(ProxyGenerator $proxyGenerator)
+    public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(InvalidArgumentException::class);
         $proxyGenerator->addUse(AbstractCollection::class);
@@ -150,7 +150,7 @@ EOT;
         return self::compileCode($code, ['itemSerializationCode' => $itemSerializationCode]);
     }
 
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         $code = <<<'EOT'
 $objectData = new class($dbData, $rootProxy, $pathInDocument) extends AbstractCollection {
@@ -197,7 +197,7 @@ EOT;
         return $property;
     }
 
-    private function generateAdderProxy(ProxyGenerator $proxyGenerator)
+    private function generateAdderProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'add'.StringUtil::camelize($this->itemMetadata->getPropertyName());
         $reflection = $proxyGenerator->getDocumentReflection();
@@ -247,7 +247,7 @@ EOT;
         $proxyGenerator->addMethod($method);
     }
 
-    private function generateRemoverProxy(ProxyGenerator $proxyGenerator)
+    private function generateRemoverProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'remove'.StringUtil::camelize($this->itemMetadata->getPropertyName());
         $reflection = $proxyGenerator->getDocumentReflection();

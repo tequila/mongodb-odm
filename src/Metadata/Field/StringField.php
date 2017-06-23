@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
 class StringField extends AbstractFieldMetadata
 {
@@ -16,7 +16,7 @@ class StringField extends AbstractFieldMetadata
         return '$dbData = null === $objectData ? null : (string) $objectData;';
     }
 
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         return '$objectData = null === $dbData ? null : (string) $dbData;';
     }

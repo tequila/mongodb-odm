@@ -5,7 +5,7 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\Proxy\NestedProxyInterface;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
 class DocumentField extends AbstractFieldMetadata
 {
@@ -43,7 +43,7 @@ class DocumentField extends AbstractFieldMetadata
         return $this->documentClass;
     }
 
-    public function generateProxy(ProxyGenerator $proxyGenerator)
+    public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse($this->getDocumentProxyClass($proxyGenerator));
         $proxyGenerator->addUse($this->documentClass);
@@ -55,7 +55,7 @@ class DocumentField extends AbstractFieldMetadata
     /**
      * {@inheritdoc}
      */
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         $code = <<<'EOT'
 $objectData = null === $dbData 
@@ -85,7 +85,7 @@ EOT;
         return $property;
     }
 
-    private function getDocumentProxyClass(ProxyGenerator $proxyGenerator): string
+    private function getDocumentProxyClass(AbstractGenerator $proxyGenerator): string
     {
         return $proxyGenerator->getFactory()->getGenerator($this->documentClass, false)->getProxyClass();
     }

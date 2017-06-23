@@ -3,8 +3,10 @@
 namespace Tequila\MongoDB\ODM\Proxy\Factory;
 
 use Tequila\MongoDB\ODM\Code\FileGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
+use Tequila\MongoDB\ODM\Proxy\Generator\NestedProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\RootProxyGenerator;
 
 class GeneratorFactory extends AbstractFactory
 {
@@ -14,12 +16,12 @@ class GeneratorFactory extends AbstractFactory
     private $metadataFactory;
 
     /**
-     * @var ProxyGenerator[]
+     * @var RootProxyGenerator[]
      */
     private $rootGeneratorsCache = [];
 
     /**
-     * @var ProxyGenerator[]
+     * @var NestedProxyGenerator[]
      */
     private $nestedGeneratorsCache = [];
 
@@ -46,30 +48,20 @@ class GeneratorFactory extends AbstractFactory
      * @param string $documentClass
      * @param bool   $isRootProxy
      *
-     * @return ProxyGenerator
+     * @return AbstractGenerator
      */
-    public function getGenerator(string $documentClass, bool $isRootProxy = true): ProxyGenerator
+    public function getGenerator(string $documentClass, bool $isRootProxy = true): AbstractGenerator
     {
-        $cache = $isRootProxy ? $this->rootGeneratorsCache : $this->nestedGeneratorsCache;
-        if (!array_key_exists($documentClass, $cache)) {
-            $cache[$documentClass] = new ProxyGenerator(
-                $documentClass,
-                $this->metadataFactory,
-                $this,
-                $this->proxiesNamespace,
-                $isRootProxy
-            );
-        }
-
-        if ($isRootProxy) {
-            $this->rootGeneratorsCache = $cache;
-        } else {
-            $this->nestedGeneratorsCache = $cache;
-        }
-
-        return $cache[$documentClass];
+        return $isRootProxy
+            ? $this->getRootGenerator($documentClass)
+            : $this->getNestedGenerator($documentClass);
     }
 
+    /**
+     * @param string $documentClass
+     * @param bool $isRootProxy
+     * @return string
+     */
     public function getProxyClass(string $documentClass, bool $isRootProxy = true): string
     {
         $proxyClassName = parent::getProxyClass($documentClass, $isRootProxy);
@@ -90,5 +82,33 @@ class GeneratorFactory extends AbstractFactory
         $this->proxyClassNames[$proxyClassName] = null;
 
         return $proxyClassName;
+    }
+
+    private function getRootGenerator(string $documentClass): RootProxyGenerator
+    {
+        if (!array_key_exists($documentClass, $this->rootGeneratorsCache)) {
+            $this->rootGeneratorsCache[$documentClass] = new RootProxyGenerator(
+                $documentClass,
+                $this->metadataFactory,
+                $this,
+                $this->proxiesNamespace
+            );
+        }
+
+        return $this->rootGeneratorsCache[$documentClass];
+    }
+
+    private function getNestedGenerator(string $documentClass): NestedProxyGenerator
+    {
+        if (!array_key_exists($documentClass, $this->nestedGeneratorsCache)) {
+            $this->nestedGeneratorsCache[$documentClass] = new NestedProxyGenerator(
+                $documentClass,
+                $this->metadataFactory,
+                $this,
+                $this->proxiesNamespace
+            );
+        }
+
+        return $this->nestedGeneratorsCache[$documentClass];
     }
 }

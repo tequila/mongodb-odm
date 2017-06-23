@@ -4,7 +4,7 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
@@ -39,9 +39,9 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
     }
 
     /**
-     * @param ProxyGenerator $proxyGenerator
+     * @param AbstractGenerator $proxyGenerator
      */
-    public function generateProxy(ProxyGenerator $proxyGenerator)
+    public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $this->generateSetterProxy($proxyGenerator);
     }
@@ -71,11 +71,11 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
     }
 
     /**
-     * @param ProxyGenerator $proxyGenerator
+     * @param AbstractGenerator $proxyGenerator
      *
      * @return string
      */
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         return '$objectData = $dbData;';
     }
@@ -121,7 +121,7 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         return $method;
     }
 
-    protected function generateSetterProxy(ProxyGenerator $proxyGenerator)
+    protected function generateSetterProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'set'.StringUtil::camelize($this->propertyName);
         if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {

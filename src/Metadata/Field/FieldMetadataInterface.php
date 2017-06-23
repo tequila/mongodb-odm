@@ -3,7 +3,7 @@
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
 interface FieldMetadataInterface
 {
@@ -18,11 +18,11 @@ interface FieldMetadataInterface
     public function getDbFieldName(): string;
 
     /**
-     * @param ProxyGenerator $proxyGenerator
+     * @param AbstractGenerator $proxyGenerator
      *
      * @return string
      */
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string;
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string;
 
     /**
      * @return string
@@ -30,9 +30,9 @@ interface FieldMetadataInterface
     public function getSerializationCode(): string;
 
     /**
-     * @param ProxyGenerator $proxyGenerator
+     * @param AbstractGenerator $proxyGenerator
      */
-    public function generateProxy(ProxyGenerator $proxyGenerator);
+    public function generateProxy(AbstractGenerator $proxyGenerator);
 
     /**
      * @param DocumentGenerator $documentGenerator

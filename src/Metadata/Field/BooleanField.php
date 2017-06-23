@@ -4,7 +4,7 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\Code\PropertyGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 
@@ -55,7 +55,7 @@ class BooleanField extends AbstractFieldMetadata
         return '$dbData = null === $objectData ? null : (bool) $objectData;';
     }
 
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         return '$objectData = null === $dbData ? null : (bool) $dbData;';
     }

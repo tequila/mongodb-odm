@@ -5,7 +5,7 @@ namespace Tequila\MongoDB\ODM\Metadata\Field;
 use DateTimeInterface;
 use MongoDB\BSON\UTCDateTime;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
 class DateField extends AbstractFieldMetadata
 {
@@ -22,7 +22,7 @@ class DateField extends AbstractFieldMetadata
         return DateTimeInterface::class;
     }
 
-    public function generateProxy(ProxyGenerator $proxyGenerator)
+    public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(UTCDateTime::class);
         $proxyGenerator->addUse(DateTimeInterface::class);
@@ -35,7 +35,7 @@ class DateField extends AbstractFieldMetadata
         return '$dbData = $objectData instanceof DateTimeInterface ? new UTCDateTime($objectData) : $objectData;';
     }
 
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         return '$objectData = $dbData instanceof UTCDateTime ? $dbData->toDateTime() : $dbData;';
     }

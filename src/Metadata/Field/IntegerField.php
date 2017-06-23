@@ -3,7 +3,7 @@
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
-use Tequila\MongoDB\ODM\Proxy\ProxyGenerator;
+use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
 class IntegerField extends AbstractFieldMetadata
 {
@@ -22,7 +22,7 @@ class IntegerField extends AbstractFieldMetadata
         parent::generateDocument($documentGenerator);
     }
 
-    public function generateProxy(ProxyGenerator $proxyGenerator)
+    public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $this->generateIncreaserProxy($proxyGenerator);
         $this->generateDecreaserProxy($proxyGenerator);
@@ -35,7 +35,7 @@ class IntegerField extends AbstractFieldMetadata
         return '$dbData = null === $objectData ? null : (int) $objectData;';
     }
 
-    public function getUnserializationCode(ProxyGenerator $proxyGenerator): string
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         return '$objectData = null === $dbData ? null : (int) $dbData;';
     }
