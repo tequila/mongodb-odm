@@ -96,8 +96,7 @@ class Repository
         ];
 
         $document = $this->getCollection()->findOneAndDelete($filter, $options);
-        if (null !== $document) {
-            /* @var DocumentManagerAwareInterface $document */
+        if ($document instanceof DocumentManagerAwareInterface) {
             $document->setManager($this->documentManager);
         }
 
@@ -119,8 +118,7 @@ class Repository
         ];
 
         $document = $this->getCollection()->findOneAndUpdate($filter, $update, $options);
-        if (null !== $document) {
-            /* @var DocumentManagerAwareInterface $document */
+        if ($document instanceof DocumentManagerAwareInterface) {
             $document->setManager($this->documentManager);
         }
 
@@ -142,8 +140,7 @@ class Repository
         ];
 
         $document = $this->getCollection()->findOneAndReplace($filter, $replacement, $options);
-        if (null !== $document) {
-            /* @var DocumentManagerAwareInterface $document */
+        if ($document instanceof DocumentManagerAwareInterface) {
             $document->setManager($this->documentManager);
         }
 
