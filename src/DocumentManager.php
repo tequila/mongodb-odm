@@ -5,9 +5,11 @@ namespace Tequila\MongoDB\ODM;
 use MongoDB\BSON\Serializable;
 use MongoDB\Collection;
 use MongoDB\Database;
+use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
 use Tequila\MongoDB\ODM\Proxy\Factory\ProxyFactoryInterface;
+use Tequila\MongoDB\ODM\Proxy\ProxyInterface;
 use Tequila\MongoDB\ODM\Repository\Repository;
 use Tequila\MongoDB\ODM\Repository\Factory\RepositoryFactoryInterface;
 
@@ -81,7 +83,7 @@ class DocumentManager
      *
      * @return BulkWriteBuilder
      */
-    public function getBulkWriteBuilder($documentClass)
+    public function getBulkWriteBuilder(string $documentClass): BulkWriteBuilder
     {
         $metadata = $this->metadataFactory->getClassMetadata($documentClass);
 
@@ -124,19 +126,20 @@ class DocumentManager
      *
      * @return ClassMetadata
      */
-    public function getMetadata($documentClass)
+    public function getMetadata($documentClass): ClassMetadata
     {
         return $this->metadataFactory->getClassMetadata($documentClass);
     }
 
     /**
      * @param string $documentClass
+     * @param bool $rootProxy
      *
      * @return string
      */
-    public function getProxyClass(string $documentClass): string
+    public function getProxyClass(string $documentClass, bool $rootProxy = true): string
     {
-        return $this->proxyFactory->getProxyClass($documentClass);
+        return $this->proxyFactory->getProxyClass($documentClass, $rootProxy);
     }
 
     /**
@@ -144,9 +147,70 @@ class DocumentManager
      *
      * @return Repository
      */
-    public function getRepository($documentClass)
+    public function getRepository($documentClass): Repository
     {
         return $this->repositoryFactory->getDocumentRepository($this, $documentClass);
+    }
+
+    /**
+     * @param DocumentInterface $document
+     */
+    public function persist(DocumentInterface $document)
+    {
+        if ($document->getMongoId()) {
+            if (!$document instanceof ProxyInterface) {
+                $this->replace($document);
+            }
+        } else {
+            $this->insert($document);
+        }
+    }
+
+    /**
+     * @param DocumentInterface $document
+     */
+    public function insert(DocumentInterface $document)
+    {
+        $this->getBulkWriteBuilder(self::getDocumentClass($document))->insertOne($document);
+    }
+
+    /**
+     * @param DocumentInterface $document
+     */
+    public function replace(DocumentInterface $document)
+    {
+        if (!$document->getMongoId()) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Cannot replace new document: %s() method expects $document to have an id.',
+                    __METHOD__
+                )
+            );
+        }
+
+        $this->getBulkWriteBuilder(self::getDocumentClass($document))->replaceOne(
+            ['_id' => $document->getMongoId()],
+            $document
+        );
+    }
+
+    /**
+     * @param DocumentInterface $document
+     */
+    public function delete(DocumentInterface $document)
+    {
+        if (!$document->getMongoId()) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Cannot delete new document: %s() method expects $document to have an id.',
+                    __METHOD__
+                )
+            );
+        }
+
+        $this->getBulkWriteBuilder(self::getDocumentClass($document))->deleteOne(
+            ['_id' => $document->getMongoId()]
+        );
     }
 
     /**
@@ -167,5 +231,14 @@ class DocumentManager
         }
 
         return md5($str);
+    }
+
+    /**
+     * @param DocumentInterface $document
+     * @return string
+     */
+    private static function getDocumentClass(DocumentInterface $document): string
+    {
+        return $document instanceof ProxyInterface ? $document->getRealClass() : get_class($document);
     }
 }
