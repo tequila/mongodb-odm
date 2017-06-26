@@ -133,7 +133,7 @@ class DocumentManager
 
     /**
      * @param string $documentClass
-     * @param bool $rootProxy
+     * @param bool   $rootProxy
      *
      * @return string
      */
@@ -157,12 +157,10 @@ class DocumentManager
      */
     public function persist(DocumentInterface $document)
     {
-        if ($document->getMongoId()) {
-            if (!$document instanceof ProxyInterface) {
-                $this->replace($document);
-            }
-        } else {
+        if (!$document->getMongoId()) {
             $this->insert($document);
+        } elseif (!$document instanceof ProxyInterface) {
+            $this->replace($document, ['upsert' => true]);
         }
     }
 
@@ -176,8 +174,9 @@ class DocumentManager
 
     /**
      * @param DocumentInterface $document
+     * @param array             $options
      */
-    public function replace(DocumentInterface $document)
+    public function replace(DocumentInterface $document, array $options = [])
     {
         if (!$document->getMongoId()) {
             throw new InvalidArgumentException(
@@ -190,14 +189,16 @@ class DocumentManager
 
         $this->getBulkWriteBuilder(self::getDocumentClass($document))->replaceOne(
             ['_id' => $document->getMongoId()],
-            $document
+            $document,
+            $options
         );
     }
 
     /**
      * @param DocumentInterface $document
+     * @param array             $options
      */
-    public function delete(DocumentInterface $document)
+    public function delete(DocumentInterface $document, array $options = [])
     {
         if (!$document->getMongoId()) {
             throw new InvalidArgumentException(
@@ -209,7 +210,8 @@ class DocumentManager
         }
 
         $this->getBulkWriteBuilder(self::getDocumentClass($document))->deleteOne(
-            ['_id' => $document->getMongoId()]
+            ['_id' => $document->getMongoId()],
+            $options
         );
     }
 
@@ -235,6 +237,7 @@ class DocumentManager
 
     /**
      * @param DocumentInterface $document
+     *
      * @return string
      */
     private static function getDocumentClass(DocumentInterface $document): string

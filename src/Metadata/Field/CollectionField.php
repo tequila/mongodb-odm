@@ -139,7 +139,7 @@ EOT;
         ]);
 
         $code = <<<'EOT'
-$objectData = (array) $objectData;
+$objectData = is_iterable($objectData) ? $objectData : [];
 $dbData = [];
 foreach ($objectData as $key => $item) {
     {{itemSerializationCode}}
@@ -153,7 +153,7 @@ EOT;
     public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
     {
         $code = <<<'EOT'
-$objectData = new class($dbData, $rootProxy, $pathInDocument) extends AbstractCollection {
+$objectData = new class((array) $dbData, $rootProxy, $pathInDocument) extends AbstractCollection {
 
     public function offsetGet($index)
     {

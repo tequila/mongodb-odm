@@ -63,7 +63,6 @@ abstract class AbstractGenerator
      */
     abstract protected function getTraits(): array;
 
-
     /**
      * @param string                   $documentClass
      * @param MetadataFactoryInterface $metadataFactory

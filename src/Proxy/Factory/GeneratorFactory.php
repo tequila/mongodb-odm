@@ -59,7 +59,8 @@ class GeneratorFactory extends AbstractFactory
 
     /**
      * @param string $documentClass
-     * @param bool $isRootProxy
+     * @param bool   $isRootProxy
+     *
      * @return string
      */
     public function getProxyClass(string $documentClass, bool $isRootProxy = true): string
