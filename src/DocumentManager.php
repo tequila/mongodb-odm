@@ -149,7 +149,7 @@ class DocumentManager
      */
     public function getRepository($documentClass): Repository
     {
-        return $this->repositoryFactory->getDocumentRepository($this, $documentClass);
+        return $this->repositoryFactory->getRepository($this, $documentClass);
     }
 
     /**
@@ -229,7 +229,7 @@ class DocumentManager
                 // All valid Collection options are BSON serializable
                 continue;
             }
-            $str .= var_export($option->bsonSerialize(), true);
+            $str .= serialize($option->bsonSerialize());
         }
 
         return md5($str);

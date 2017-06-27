@@ -29,7 +29,7 @@ class DefaultRepositoryFactory implements RepositoryFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getDocumentRepository(DocumentManager $documentManager, $documentClass)
+    public function getRepository(DocumentManager $documentManager, $documentClass)
     {
         if (!array_key_exists($documentClass, $this->repositoriesCache)) {
             $collection = $documentManager->getCollectionByDocumentClass($documentClass);
