@@ -67,7 +67,7 @@ class GeneratorFactory extends AbstractFactory
     {
         $proxyClassName = parent::getProxyClass($documentClass, $isRootProxy);
         if (array_key_exists($proxyClassName, $this->proxyClassNames)) {
-            return $this->proxyClassNames[$proxyClassName];
+            return $proxyClassName;
         }
 
         $proxyGenerator = $this->getGenerator($documentClass, $isRootProxy);
