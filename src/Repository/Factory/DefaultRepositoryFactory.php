@@ -32,14 +32,12 @@ class DefaultRepositoryFactory implements RepositoryFactoryInterface
     public function getRepository(DocumentManager $documentManager, $documentClass)
     {
         if (!array_key_exists($documentClass, $this->repositoriesCache)) {
-            $collection = $documentManager->getCollectionByDocumentClass($documentClass);
-
             $metadata = $this->metadataFactory->getClassMetadata($documentClass);
             if (null === $repositoryClass = $metadata->getRepositoryClass()) {
                 $repositoryClass = Repository::class;
             }
 
-            $this->repositoriesCache[$documentClass] = new $repositoryClass($collection);
+            $this->repositoriesCache[$documentClass] = new $repositoryClass($documentManager, $documentClass);
         }
 
         return $this->repositoriesCache[$documentClass];
