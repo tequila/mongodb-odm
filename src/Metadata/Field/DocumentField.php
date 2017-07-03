@@ -45,7 +45,7 @@ class DocumentField extends AbstractFieldMetadata
 
     public function generateProxy(AbstractGenerator $proxyGenerator)
     {
-        $proxyGenerator->addUse($this->getDocumentProxyClass($proxyGenerator));
+        $proxyGenerator->addUse($proxyGenerator->getOtherProxyClass($this->documentClass));
         $proxyGenerator->addUse($this->documentClass);
         $proxyGenerator->addUse(NestedProxyInterface::class);
 
@@ -71,7 +71,7 @@ if ($objectData instanceof NestedProxyInterface) {
 }
 EOT;
 
-        $proxyClass = $this->getDocumentProxyClass($proxyGenerator);
+        $proxyClass = $proxyGenerator->getOtherProxyClass($this->documentClass);
         $proxyShortName = substr($proxyClass, strrpos($proxyClass, '\\'));
 
         return self::compileCode($code, ['proxyClass' => ltrim($proxyShortName, '\\')]);
@@ -83,10 +83,5 @@ EOT;
         $property->setDocBlock('@var \\'.ltrim($this->documentClass, '\\'));
 
         return $property;
-    }
-
-    private function getDocumentProxyClass(AbstractGenerator $proxyGenerator): string
-    {
-        return $proxyGenerator->getFactory()->getProxyClass($this->documentClass, false);
     }
 }

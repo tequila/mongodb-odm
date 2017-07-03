@@ -201,7 +201,7 @@ EOT;
     private function generateAdderProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'add'.StringUtil::camelize($this->itemMetadata->getPropertyName());
-        $reflection = $proxyGenerator->getDocumentReflection();
+        $reflection = $proxyGenerator->getReflection();
         if (!$reflection->hasMethod($methodName)) {
             $proxyGenerator->addError(
                 sprintf(
@@ -251,7 +251,7 @@ EOT;
     private function generateRemoverProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'remove'.StringUtil::camelize($this->itemMetadata->getPropertyName());
-        $reflection = $proxyGenerator->getDocumentReflection();
+        $reflection = $proxyGenerator->getReflection();
         if (!$reflection->hasMethod($methodName)) {
             $proxyGenerator->addError(
                 sprintf(
@@ -293,9 +293,6 @@ $this->getRootProxy()->pull(
     ${{param}} instanceof DocumentInterface ? ['_id' => ${{param}}->getMongoId()] : ${{param}}
 );
 EOT;
-            $proxyClass = $proxyGenerator->getFactory()->getGenerator($itemClassName, false)->getProxyClass();
-            $proxyClassParts = explode('\\', $proxyClass);
-            $params['proxyClass'] = end($proxyClassParts);
             $params['itemClass'] = $this->itemMetadata->getDocumentClass();
         } else {
             $code = <<<'EOT'

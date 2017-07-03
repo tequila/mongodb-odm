@@ -7,6 +7,7 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use PHPUnit\Framework\TestCase;
 use DateTime;
+use Tequila\MongoDB\ODM\DocumentManager;
 use Tequila\MongoDB\ODM\Metadata\Factory\StaticMethodAwareFactory;
 use Tequila\MongoDB\ODM\Proxy\NestedProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
@@ -89,15 +90,18 @@ class SerializationUnserializationTest extends TestCase
     public function testUnserialization(array $blogPostSerialized)
     {
         $metadataFactory = new StaticMethodAwareFactory();
-        $proxyFactory = new GeneratorFactory(
-            __DIR__.'/../../Stubs/Proxy',
-            'TequilaODMFunctionalTests',
-            $metadataFactory
-        );
+        $proxyFactory = new GeneratorFactory(__DIR__.'/../../Stubs/Proxy', 'TequilaODMFunctionalTests');
 
-        $blogPostProxyClass = $proxyFactory->getProxyClass(BlogPost::class);
-        $authorProxyClass = $proxyFactory->getProxyClass(Author::class, false);
-        $commentProxyClass = $proxyFactory->getProxyClass(Comment::class, false);
+        /** @var \PHPUnit_Framework_MockObject_MockObject|DocumentManager $dm */
+        $dm = $this->createMock(DocumentManager::class);
+        $getMetadataClosure = function (string $className) use ($metadataFactory) {
+            return $metadataFactory->getClassMetadata($className);
+        };
+        $dm->method('getMetadata')->will($this->returnCallback($getMetadataClosure));
+
+        $blogPostProxyClass = $proxyFactory->getProxyClass($dm, BlogPost::class);
+        $authorProxyClass = $proxyFactory->getProxyClass($dm, Author::class);
+        $commentProxyClass = $proxyFactory->getProxyClass($dm, Comment::class);
 
         /** @var BlogPost $blogPost */
         $blogPost = apply_type_map_to_document(

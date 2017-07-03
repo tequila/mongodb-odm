@@ -2,8 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Proxy\Generator;
 
-use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
-use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
+use Tequila\MongoDB\ODM\DocumentManager;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
@@ -14,14 +13,14 @@ use Zend\Code\Reflection\ClassReflection;
 abstract class AbstractGenerator
 {
     /**
+     * @var
+     */
+    protected $documentManager;
+
+    /**
      * @var ClassMetadata
      */
     protected $metadata;
-
-    /**
-     * @var ClassReflection
-     */
-    private $reflection;
 
     /**
      * @var ClassGenerator
@@ -34,19 +33,9 @@ abstract class AbstractGenerator
     private $factory;
 
     /**
-     * @var MetadataFactoryInterface
-     */
-    private $metadataFactory;
-
-    /**
      * @var array
      */
     private $errors = [];
-
-    /**
-     * @return string
-     */
-    abstract public function getProxyClass(): string;
 
     /**
      * @return MethodGenerator
@@ -64,26 +53,20 @@ abstract class AbstractGenerator
     abstract protected function getTraits(): array;
 
     /**
-     * @param string                   $documentClass
-     * @param MetadataFactoryInterface $metadataFactory
-     * @param GeneratorFactory         $factory
-     * @param string                   $proxyNamespace
+     * @param DocumentManager  $documentManager
+     * @param ClassMetadata    $metadata
+     * @param GeneratorFactory $factory
+     * @param string           $proxyNamespace
      */
     public function __construct(
-        string $documentClass,
-        MetadataFactoryInterface $metadataFactory,
+        DocumentManager $documentManager,
+        ClassMetadata $metadata,
         GeneratorFactory $factory,
         string $proxyNamespace
     ) {
-        $metadata = $metadataFactory->getClassMetadata($documentClass);
-
+        $this->documentManager = $documentManager;
         $this->metadata = $metadata;
-        $this->metadataFactory = $metadataFactory;
         $this->factory = $factory;
-        $this->reflection = new ClassReflection($metadata->getDocumentClass());
-        if ('' === $proxyNamespace || '\\' === $proxyNamespace) {
-            throw new InvalidArgumentException('$proxyNamespace cannot be empty.');
-        }
         $this->proxyNamespace = trim($proxyNamespace, '\\');
 
         $this->classGenerator = new ClassGenerator($this->getProxyClass());
@@ -109,19 +92,13 @@ abstract class AbstractGenerator
     }
 
     /**
-     * @return GeneratorFactory
+     * @param string $documentClass
+     *
+     * @return string
      */
-    public function getFactory(): GeneratorFactory
+    public function getOtherProxyClass(string $documentClass): string
     {
-        return $this->factory;
-    }
-
-    /**
-     * @return MetadataFactoryInterface
-     */
-    public function getMetadataFactory(): MetadataFactoryInterface
-    {
-        return $this->metadataFactory;
+        return $this->factory->getProxyClass($this->documentManager, $documentClass);
     }
 
     /**
@@ -133,19 +110,11 @@ abstract class AbstractGenerator
     }
 
     /**
-     * @return ClassMetadata
-     */
-    public function getMetadata(): ClassMetadata
-    {
-        return $this->metadata;
-    }
-
-    /**
      * @return ClassReflection
      */
-    public function getDocumentReflection(): ClassReflection
+    public function getReflection(): ClassReflection
     {
-        return $this->reflection;
+        return $this->metadata->getReflection();
     }
 
     /**
@@ -182,9 +151,14 @@ abstract class AbstractGenerator
         return $this->classGenerator;
     }
 
+    public function getProxyClass(): string
+    {
+        return $this->proxyNamespace.'\\'.$this->getDocumentClass().'Proxy';
+    }
+
     private function generateBsonUnserializeMethod()
     {
-        if (!$this->reflection->hasMethod('bsonUnserialize')) {
+        if (!$this->getReflection()->hasMethod('bsonUnserialize')) {
             throw new LogicException(
                 sprintf(
                     'Document class %s does not have method "bsonUnserialize", proxy cannot be generated.',

@@ -133,13 +133,12 @@ class DocumentManager
 
     /**
      * @param string $documentClass
-     * @param bool   $rootProxy
      *
      * @return string
      */
-    public function getProxyClass(string $documentClass, bool $rootProxy = true): string
+    public function getProxyClass(string $documentClass): string
     {
-        return $this->proxyFactory->getProxyClass($documentClass, $rootProxy);
+        return $this->proxyFactory->getProxyClass($this, $documentClass);
     }
 
     /**
@@ -147,8 +146,15 @@ class DocumentManager
      *
      * @return Repository
      */
-    public function getRepository($documentClass): Repository
+    public function getRepository(string $documentClass): Repository
     {
+        $metadata = $this->getMetadata($documentClass);
+        if ($metadata->isNested()) {
+            throw new InvalidArgumentException(
+                sprintf('Cannot get repository for nested document class "%s".', $documentClass)
+            );
+        }
+
         return $this->repositoryFactory->getRepository($this, $documentClass);
     }
 

@@ -4,7 +4,6 @@ namespace Tequila\MongoDB\ODM\Repository\Factory;
 
 use Tequila\MongoDB\ODM\DocumentManager;
 use Tequila\MongoDB\ODM\Repository\Repository;
-use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
 
 class DefaultRepositoryFactory implements RepositoryFactoryInterface
 {
@@ -14,25 +13,12 @@ class DefaultRepositoryFactory implements RepositoryFactoryInterface
     private $repositoriesCache = [];
 
     /**
-     * @var MetadataFactoryInterface
-     */
-    private $metadataFactory;
-
-    /**
-     * @param MetadataFactoryInterface $metadataFactory
-     */
-    public function __construct(MetadataFactoryInterface $metadataFactory)
-    {
-        $this->metadataFactory = $metadataFactory;
-    }
-
-    /**
      * {@inheritdoc}
      */
-    public function getRepository(DocumentManager $documentManager, $documentClass)
+    public function getRepository(DocumentManager $documentManager, string $documentClass): Repository
     {
         if (!array_key_exists($documentClass, $this->repositoriesCache)) {
-            $metadata = $this->metadataFactory->getClassMetadata($documentClass);
+            $metadata = $documentManager->getMetadata($documentClass);
             if (null === $repositoryClass = $metadata->getRepositoryClass()) {
                 $repositoryClass = Repository::class;
             }

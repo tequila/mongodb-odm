@@ -13,14 +13,6 @@ use Zend\Code\Generator\ParameterGenerator;
 class RootProxyGenerator extends AbstractGenerator
 {
     /**
-     * @return string
-     */
-    public function getProxyClass(): string
-    {
-        return $this->proxyNamespace.'\\'.$this->getDocumentClass().'RootProxy';
-    }
-
-    /**
      * @return MethodGenerator
      */
     protected function createBsonUnserializeMethod(): MethodGenerator

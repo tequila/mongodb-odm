@@ -9,14 +9,6 @@ use Zend\Code\Generator\MethodGenerator;
 
 class NestedProxyGenerator extends AbstractGenerator
 {
-    /**
-     * @return string
-     */
-    public function getProxyClass(): string
-    {
-        return $this->proxyNamespace.'\\'.$this->getDocumentClass().'NestedProxy';
-    }
-
     protected function createBsonUnserializeMethod(): MethodGenerator
     {
         $method = new MethodGenerator('doBsonUnserialize');

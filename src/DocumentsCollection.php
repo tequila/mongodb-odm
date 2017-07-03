@@ -87,13 +87,11 @@ class DocumentsCollection implements Iterator
     }
 
     /**
-     * @return array|\MongoDB\BSON\Unserializable|object
+     * {@inheritdoc}
      */
     public function next()
     {
         $this->generator->next();
-
-        return $this->current();
     }
 
     /**

@@ -13,5 +13,5 @@ interface RepositoryFactoryInterface
      *
      * @return Repository
      */
-    public function getRepository(DocumentManager $documentManager, $documentClass);
+    public function getRepository(DocumentManager $documentManager, string $documentClass): Repository;
 }

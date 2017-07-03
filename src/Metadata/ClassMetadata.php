@@ -2,6 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Metadata;
 
+use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\Repository\Repository;
 use Tequila\MongoDB\ODM\Metadata\Field\AbstractFieldMetadata;
 use Tequila\MongoDB\ODM\Metadata\Field\BooleanField;
@@ -13,6 +14,7 @@ use Tequila\MongoDB\ODM\Metadata\Field\FloatField;
 use Tequila\MongoDB\ODM\Metadata\Field\IntegerField;
 use Tequila\MongoDB\ODM\Metadata\Field\ObjectIdField;
 use Tequila\MongoDB\ODM\Metadata\Field\StringField;
+use Zend\Code\Reflection\ClassReflection;
 
 class ClassMetadata
 {
@@ -29,7 +31,7 @@ class ClassMetadata
     /**
      * @var array
      */
-    private $collectionOptions = [];
+    private $collectionOptions;
 
     /**
      * @var string
@@ -45,6 +47,16 @@ class ClassMetadata
      * @var AbstractFieldMetadata[]
      */
     private $fieldsMetadata = [];
+
+    /**
+     * @var bool
+     */
+    private $nested = false;
+
+    /**
+     * @var ClassReflection
+     */
+    private $reflection;
 
     /**
      * @param string $documentClass
@@ -167,6 +179,32 @@ class ClassMetadata
     }
 
     /**
+     * @return bool
+     */
+    public function isNested(): bool
+    {
+        return $this->nested;
+    }
+
+    /**
+     * @param bool $nested
+     *
+     * @return $this
+     */
+    public function setNested(bool $nested = true)
+    {
+        if ($nested && (null !== $this->collectionName || null !== $this->collectionOptions)) {
+            $err = 'Document class "%s" cannot be nested if collection name or collection options had been specified.';
+
+            throw new LogicException(sprintf($err, $this->documentClass));
+        }
+
+        $this->nested = $nested;
+
+        return $this;
+    }
+
+    /**
      * @param string $propertyName
      *
      * @return FieldMetadataInterface
@@ -221,6 +259,15 @@ class ClassMetadata
      */
     public function setCollectionName(string $collectionName)
     {
+        if ($this->nested) {
+            throw new LogicException(
+                sprintf(
+                    'Collection name cannot be set for nested document class "%s".',
+                    $this->documentClass
+                )
+            );
+        }
+
         $this->collectionName = $collectionName;
 
         return $this;
@@ -247,7 +294,7 @@ class ClassMetadata
      */
     public function getCollectionOptions(): array
     {
-        return $this->collectionOptions;
+        return (array) $this->collectionOptions;
     }
 
     /**
@@ -257,6 +304,15 @@ class ClassMetadata
      */
     public function setCollectionOptions(array $collectionOptions)
     {
+        if ($this->nested) {
+            throw new LogicException(
+                sprintf(
+                    'Collection options cannot be set for nested document class "%s".',
+                    $this->documentClass
+                )
+            );
+        }
+
         $this->collectionOptions = $collectionOptions;
 
         return $this;
@@ -280,5 +336,17 @@ class ClassMetadata
         $this->repositoryClass = (string) $repositoryClass;
 
         return $this;
+    }
+
+    /**
+     * @return ClassReflection
+     */
+    public function getReflection(): ClassReflection
+    {
+        if (null === $this->reflection) {
+            $this->reflection = new ClassReflection($this->documentClass);
+        }
+
+        return $this->reflection;
     }
 }

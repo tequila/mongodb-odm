@@ -35,7 +35,7 @@ trait IncreaserDecreaserTrait
     protected function generateIncreaserProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'increase'.StringUtil::camelize($this->propertyName);
-        if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
+        if (!$proxyGenerator->getReflection()->hasMethod($methodName)) {
             $proxyGenerator->addError(
                 sprintf(
                     'Document class %s does not contain method %s, therefore it had not been generated in proxy.',
@@ -47,7 +47,7 @@ trait IncreaserDecreaserTrait
             return;
         }
 
-        $methodReflection = $proxyGenerator->getDocumentReflection()->getMethod($methodName);
+        $methodReflection = $proxyGenerator->getReflection()->getMethod($methodName);
         if (1 !== count($methodReflection->getParameters())) {
             $proxyGenerator->addError(
                 sprintf(
@@ -81,7 +81,7 @@ EOT;
     protected function generateDecreaserProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'decrease'.StringUtil::camelize($this->propertyName);
-        if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
+        if (!$proxyGenerator->getReflection()->hasMethod($methodName)) {
             $proxyGenerator->addError(
                 sprintf(
                     'Document class %s does not contain method %s, therefore it have not been generated in proxy.',
@@ -93,7 +93,7 @@ EOT;
             return;
         }
 
-        $methodReflection = $proxyGenerator->getDocumentReflection()->getMethod($methodName);
+        $methodReflection = $proxyGenerator->getReflection()->getMethod($methodName);
         if (1 !== count($methodReflection->getParameters())) {
             $proxyGenerator->addError(
                 sprintf(

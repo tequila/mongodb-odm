@@ -40,11 +40,9 @@ abstract class AbstractFactory implements ProxyFactoryInterface
         });
     }
 
-    public function getProxyClass(string $documentClass, bool $isRootProxy = true): string
+    protected function getProxyClassName(string $documentClass): string
     {
-        $suffix = $isRootProxy ? 'RootProxy' : 'NestedProxy';
-
-        return $this->proxiesNamespace.'\\'.$documentClass.$suffix;
+        return $this->proxiesNamespace.'\\'.$documentClass.'Proxy';
     }
 
     protected function getProxyFileName(string $proxyClass)

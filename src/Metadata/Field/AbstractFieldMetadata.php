@@ -124,7 +124,7 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
     protected function generateSetterProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'set'.StringUtil::camelize($this->propertyName);
-        if (!$proxyGenerator->getDocumentReflection()->hasMethod($methodName)) {
+        if (!$proxyGenerator->getReflection()->hasMethod($methodName)) {
             $proxyGenerator->addError(
                 sprintf(
                     'Document class %s does not contain method %s, therefore it had not been generated in proxy.',
@@ -136,7 +136,7 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
             return;
         }
 
-        $methodReflection = $proxyGenerator->getDocumentReflection()->getMethod($methodName);
+        $methodReflection = $proxyGenerator->getReflection()->getMethod($methodName);
         if (1 !== count($methodReflection->getParameters())) {
             $proxyGenerator->addError(
                 sprintf(
