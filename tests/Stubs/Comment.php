@@ -9,6 +9,7 @@ class Comment
     public static function loadClassMetadata(ClassMetadata $metadata)
     {
         $metadata
+            ->setNested(true)
             ->addDocumentField(Author::class, 'author', '_author')
             ->addDateField('createdAt', 'created_at')
             ->addStringField('content', '_content');

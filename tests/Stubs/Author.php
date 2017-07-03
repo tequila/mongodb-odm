@@ -10,6 +10,7 @@ class Author
     public static function loadClassMetadata(ClassMetadata $metadata)
     {
         $metadata
+            ->setNested(true)
             ->addStringField('firstName', 'first_name')
             ->addStringField('lastName', 'last_name')
             ->addCollectionField(
