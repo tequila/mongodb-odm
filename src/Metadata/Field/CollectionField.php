@@ -155,13 +155,14 @@ EOT;
         $code = <<<'EOT'
 $objectData = new class((array) $dbData, $rootProxy, $pathInDocument) extends AbstractCollection {
 
+    private $unserializedDocuments = [];
+
     public function offsetGet($index)
-    {
-        static $unserializedDocuments = [];
-        if (!array_key_exists($index, $unserializedDocuments)) {
+    {        
+        if (!array_key_exists($index, $this->unserializedDocuments)) {
             {{itemUnserializationCode}}
 
-            $unserializedDocuments[$index] = null;
+            $this->unserializedDocuments[$index] = null;
         }
         
         return $this->array[$index];

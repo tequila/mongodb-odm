@@ -87,6 +87,6 @@ EOT;
 
     private function getDocumentProxyClass(AbstractGenerator $proxyGenerator): string
     {
-        return $proxyGenerator->getFactory()->getGenerator($this->documentClass, false)->getProxyClass();
+        return $proxyGenerator->getFactory()->getProxyClass($this->documentClass, false);
     }
 }
