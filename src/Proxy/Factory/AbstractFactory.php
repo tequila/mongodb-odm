@@ -2,8 +2,6 @@
 
 namespace Tequila\MongoDB\ODM\Proxy\Factory;
 
-use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
-
 abstract class AbstractFactory implements ProxyFactoryInterface
 {
     /**
@@ -22,12 +20,6 @@ abstract class AbstractFactory implements ProxyFactoryInterface
      */
     public function __construct(string $proxiesDir, string $proxiesNamespace)
     {
-        if ('' === $proxiesDir) {
-            throw new InvalidArgumentException('$proxiesDir cannot be empty.');
-        }
-        if ('' === $proxiesNamespace || '\\' === $proxiesNamespace) {
-            throw new InvalidArgumentException('$proxiesNamespace cannot be empty.');
-        }
         $this->proxiesDir = rtrim($proxiesDir, '/');
         $this->proxiesNamespace = trim($proxiesNamespace, '\\');
 

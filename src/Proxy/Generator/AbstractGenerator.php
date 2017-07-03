@@ -2,7 +2,6 @@
 
 namespace Tequila\MongoDB\ODM\Proxy\Generator;
 
-use Tequila\MongoDB\ODM\DocumentManager;
 use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\Metadata\ClassMetadata;
 use Tequila\MongoDB\ODM\Proxy\Factory\GeneratorFactory;
@@ -12,11 +11,6 @@ use Zend\Code\Reflection\ClassReflection;
 
 abstract class AbstractGenerator
 {
-    /**
-     * @var
-     */
-    protected $documentManager;
-
     /**
      * @var ClassMetadata
      */
@@ -53,18 +47,12 @@ abstract class AbstractGenerator
     abstract protected function getTraits(): array;
 
     /**
-     * @param DocumentManager  $documentManager
      * @param ClassMetadata    $metadata
      * @param GeneratorFactory $factory
      * @param string           $proxyNamespace
      */
-    public function __construct(
-        DocumentManager $documentManager,
-        ClassMetadata $metadata,
-        GeneratorFactory $factory,
-        string $proxyNamespace
-    ) {
-        $this->documentManager = $documentManager;
+    public function __construct(ClassMetadata $metadata, GeneratorFactory $factory, string $proxyNamespace)
+    {
         $this->metadata = $metadata;
         $this->factory = $factory;
         $this->proxyNamespace = trim($proxyNamespace, '\\');
@@ -98,7 +86,7 @@ abstract class AbstractGenerator
      */
     public function getOtherProxyClass(string $documentClass): string
     {
-        return $this->factory->getProxyClass($this->documentManager, $documentClass);
+        return $this->factory->getProxyClass($documentClass);
     }
 
     /**

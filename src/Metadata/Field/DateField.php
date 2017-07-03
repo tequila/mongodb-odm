@@ -32,7 +32,9 @@ class DateField extends AbstractFieldMetadata
 
     public function getSerializationCode(): string
     {
-        return '$dbData = $objectData instanceof DateTimeInterface ? new UTCDateTime($objectData) : $objectData;';
+        return '$dbData = $objectData instanceof DateTimeInterface 
+                    ? new UTCDateTime($objectData) 
+                    : $objectData;';
     }
 
     public function getUnserializationCode(AbstractGenerator $proxyGenerator): string

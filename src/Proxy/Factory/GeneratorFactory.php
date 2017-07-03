@@ -3,7 +3,7 @@
 namespace Tequila\MongoDB\ODM\Proxy\Factory;
 
 use Tequila\MongoDB\ODM\Code\FileGenerator;
-use Tequila\MongoDB\ODM\DocumentManager;
+use Tequila\MongoDB\ODM\Metadata\Factory\MetadataFactoryInterface;
 use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 use Tequila\MongoDB\ODM\Proxy\Generator\NestedProxyGenerator;
 use Tequila\MongoDB\ODM\Proxy\Generator\RootProxyGenerator;
@@ -21,19 +21,33 @@ class GeneratorFactory extends AbstractFactory
     private $proxyClassNames = [];
 
     /**
-     * @param DocumentManager $documentManager
-     * @param string          $documentClass
-     *
+     * @var MetadataFactoryInterface
+     */
+    private $metadataFactory;
+
+    /**
+     * @param string $proxiesDir
+     * @param string $proxiesNamespace
+     * @param MetadataFactoryInterface $metadataFactory
+     */
+    public function __construct($proxiesDir, $proxiesNamespace, MetadataFactoryInterface $metadataFactory)
+    {
+        $this->metadataFactory = $metadataFactory;
+        parent::__construct($proxiesDir, $proxiesNamespace);
+    }
+
+    /**
+     * @param string $documentClass
      * @return string
      */
-    public function getProxyClass(DocumentManager $documentManager, string $documentClass): string
+    public function getProxyClass(string $documentClass): string
     {
         if (array_key_exists($documentClass, $this->proxyClassNames)) {
             return $this->proxyClassNames[$documentClass];
         }
 
         $proxyClassName = $this->getProxyClassName($documentClass);
-        $proxyGenerator = $this->getGenerator($documentManager, $documentClass);
+        $proxyGenerator = $this->getGenerator($documentClass);
         $classGenerator = $proxyGenerator->generateClass();
         $proxyFile = $this->getProxyFileName($proxyClassName);
         $proxyDir = dirname($proxyFile);
@@ -49,18 +63,16 @@ class GeneratorFactory extends AbstractFactory
     }
 
     /**
-     * @param DocumentManager $documentManager
-     * @param string          $documentClass
-     *
+     * @param string $documentClass
      * @return AbstractGenerator
      */
-    private function getGenerator(DocumentManager $documentManager, string $documentClass): AbstractGenerator
+    private function getGenerator(string $documentClass): AbstractGenerator
     {
         if (!array_key_exists($documentClass, $this->generatorsCache)) {
-            $metadata = $documentManager->getMetadata($documentClass);
+            $metadata = $this->metadataFactory->getClassMetadata($documentClass);
             $this->generatorsCache[$documentClass] = $metadata->isNested()
-                ? new NestedProxyGenerator($documentManager, $metadata, $this, $this->proxiesNamespace)
-                : new RootProxyGenerator($documentManager, $metadata, $this, $this->proxiesNamespace);
+                ? new NestedProxyGenerator($metadata, $this, $this->proxiesNamespace)
+                : new RootProxyGenerator($metadata, $this, $this->proxiesNamespace);
         }
 
         return $this->generatorsCache[$documentClass];

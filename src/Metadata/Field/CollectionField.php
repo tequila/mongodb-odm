@@ -54,7 +54,8 @@ class CollectionField extends AbstractFieldMetadata
         if ($this->itemMetadata instanceof DocumentField) {
             $removerBody = <<<'EOT'
 foreach ($this->{{property}} as $key => ${{item}}) {
-    if (${{param}} === ${{item}} || ${{param}} === ${{item}}->getMongoId()) {
+    $hasSameId = null !== ${{param}} && ${{param}} === ${{item}}->getMongoId();
+    if (${{param}} === ${{item}} || $hasSameId) {
         $this->{{property}}[$key] = null;
     }
 }
@@ -283,8 +284,6 @@ EOT;
         $params = [];
 
         if ($this->itemMetadata instanceof DocumentField) {
-            $itemClassName = $this->itemMetadata->getDocumentClass();
-
             $proxyGenerator->addUse(DocumentInterface::class);
             $code = <<<'EOT'
 parent::{{method}}(${{param}});
