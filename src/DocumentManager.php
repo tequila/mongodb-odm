@@ -138,7 +138,7 @@ class DocumentManager
      */
     public function getProxyClass(string $documentClass): string
     {
-        return $this->proxyFactory->getProxyClass($this, $documentClass);
+        return $this->proxyFactory->getProxyClass($documentClass);
     }
 
     /**
