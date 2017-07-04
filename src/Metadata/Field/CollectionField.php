@@ -284,6 +284,7 @@ EOT;
         $params = [];
 
         if ($this->itemMetadata instanceof DocumentField) {
+
             $proxyGenerator->addUse(DocumentInterface::class);
             $code = <<<'EOT'
 parent::{{method}}(${{param}});
