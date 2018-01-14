@@ -42,6 +42,8 @@ class CollectionField extends AbstractFieldMetadata
         $adderParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName));
         $adderParam->setType($this->itemMetadata->getType());
 
+        // TODO refactor adders and removers functionality:
+        // We should use "collections" for consistent updates in documents and proxies
         $adder = new MethodGenerator('add'.$camelizedItemPropertyName);
         $adder->setParameter($adderParam);
         $adder->setBody(
