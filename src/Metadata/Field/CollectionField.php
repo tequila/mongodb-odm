@@ -201,6 +201,8 @@ EOT;
         $code = <<<'EOT'
 parent::{{method}}(${{param}});
 $this->getRootProxy()->push($this->getPathInDocument('{{dbField}}'), ${{param}});
+
+return $this;
 EOT;
 
         $params += [
@@ -257,12 +259,16 @@ $this->getRootProxy()->pull(
     $this->getPathInDocument('{{dbField}}'), 
     ${{param}} instanceof DocumentInterface ? ['_id' => ${{param}}->getMongoId()] : ${{param}}
 );
+
+return $this;
 EOT;
             $params['itemClass'] = $this->itemMetadata->getDocumentClass();
         } else {
             $code = <<<'EOT'
 parent::{{method}}(${{param}});
 $this->getRootProxy()->pull($this->getPathInDocument('{{dbField}}'), ${{param}});
+
+return $this;
 EOT;
         }
 

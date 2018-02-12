@@ -157,6 +157,8 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         $code = <<<'EOT'
 parent::{{methodName}}(${{paramName}});
 $this->getRootProxy()->set($this->getPathInDocument('{{dbFieldName}}'), ${{paramName}});
+
+return $this;
 EOT;
         $code = self::compileCode($code, [
             'methodName' => $methodName,
