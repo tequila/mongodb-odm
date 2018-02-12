@@ -39,21 +39,20 @@ class CollectionField extends AbstractFieldMetadata
         }
 
         $camelizedItemPropertyName = StringUtil::camelize($this->itemMetadata->getPropertyName());
-        $adderParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName));
-        $adderParam->setType($this->itemMetadata->getType());
+        $itemParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName));
+        $itemParam->setType($this->itemMetadata->getType());
 
         // TODO refactor adders and removers functionality:
         // We should use "collections" for consistent updates in documents and proxies
         $adder = new MethodGenerator('add'.$camelizedItemPropertyName);
-        $adder->setParameter($adderParam);
-        $adderBody = sprintf('$this->%s[] = $%s;', $this->getPropertyName(), $adderParam->getName());
+        $adder->setParameter($itemParam);
+        $adderBody = sprintf('$this->%s[] = $%s;', $this->getPropertyName(), $itemParam->getName());
         $adderBody .= str_repeat(PHP_EOL, 2);
         $adderBody .= 'return $this;';
         $adder->setBody($adderBody);
 
         $remover = new MethodGenerator('remove'.$camelizedItemPropertyName);
-        $removerParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName).'ToRemove');
-        $remover->setParameter($removerParam);
+        $remover->setParameter($itemParam);
         $removerBody = <<<'EOT'
 foreach ($this->{{property}} as $key => ${{item}}) {
     if (${{param}} === ${{item}}) {
@@ -66,8 +65,8 @@ EOT;
 
         $removerBody = self::compileCode($removerBody, [
             'property' => $this->getPropertyName(),
-            'param' => $removerParam->getName(),
-            'item' => lcfirst($camelizedItemPropertyName),
+            'param' => $itemParam->getName(),
+            'item' => '_'.lcfirst($camelizedItemPropertyName),
         ]);
 
         $remover->setBody($removerBody);
