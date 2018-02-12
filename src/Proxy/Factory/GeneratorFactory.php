@@ -37,10 +37,18 @@ class GeneratorFactory extends AbstractFactory
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getProxyClass(string $documentClass): string
+    {
+        return $this->generateProxyClass($documentClass);
+    }
+
+    /**
      * @param string $documentClass
      * @return string
      */
-    public function getProxyClass(string $documentClass): string
+    public function generateProxyClass(string $documentClass): string
     {
         if (array_key_exists($documentClass, $this->proxyClassNames)) {
             return $this->proxyClassNames[$documentClass];

@@ -46,31 +46,23 @@ class CollectionField extends AbstractFieldMetadata
         // We should use "collections" for consistent updates in documents and proxies
         $adder = new MethodGenerator('add'.$camelizedItemPropertyName);
         $adder->setParameter($adderParam);
-        $adder->setBody(
-            sprintf('$this->%s[] = $%s;', $this->getPropertyName(), $adderParam->getName())
-        );
+        $adderBody = sprintf('$this->%s[] = $%s;', $this->getPropertyName(), $adderParam->getName());
+        $adderBody .= str_repeat(PHP_EOL, 2);
+        $adderBody .= 'return $this;';
+        $adder->setBody($adderBody);
 
         $remover = new MethodGenerator('remove'.$camelizedItemPropertyName);
         $removerParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName).'ToRemove');
         $remover->setParameter($removerParam);
-        if ($this->itemMetadata instanceof DocumentField) {
-            $removerBody = <<<'EOT'
-foreach ($this->{{property}} as $key => ${{item}}) {
-    $hasSameId = null !== ${{param}} && ${{param}} === ${{item}}->getMongoId();
-    if (${{param}} === ${{item}} || $hasSameId) {
-        $this->{{property}}[$key] = null;
-    }
-}
-EOT;
-        } else {
-            $removerBody = <<<'EOT'
+        $removerBody = <<<'EOT'
 foreach ($this->{{property}} as $key => ${{item}}) {
     if (${{param}} === ${{item}}) {
         $this->{{property}}[$key] = null;
     }
 }
+
+return $this;
 EOT;
-        }
 
         $removerBody = self::compileCode($removerBody, [
             'property' => $this->getPropertyName(),
@@ -79,34 +71,6 @@ EOT;
         ]);
 
         $remover->setBody($removerBody);
-
-        if ($this->itemMetadata instanceof DocumentField) {
-            $itemGetter = new MethodGenerator('get'.$camelizedItemPropertyName);
-            $itemGetterParam = new ParameterGenerator(lcfirst($camelizedItemPropertyName).'Id');
-            $itemGetter->setParameter($itemGetterParam);
-            $itemGetter->setReturnType($this->itemMetadata->getType());
-            $itemGetterBody = <<<'EOT'
-foreach ($this->{{property}} as ${{item}}) {
-    if (${{item}}->getMongoId() === ${{param}}) {
-        return ${{item}};
-    }
-}
-
-throw new InvalidArgumentException(
-    sprintf('{{itemAlias}} with primary key "%s" is not found.', (string) ${{param}})
-);
-EOT;
-            $documentGenerator->addUse(InvalidArgumentException::class);
-            $itemGetterBody = self::compileCode($itemGetterBody, [
-                'property' => $this->getPropertyName(),
-                'param' => $itemGetterParam->getName(),
-                'item' => lcfirst($camelizedItemPropertyName),
-                'itemAlias' => $camelizedItemPropertyName,
-            ]);
-            $itemGetter->setBody($itemGetterBody);
-
-            $documentGenerator->addMethod($itemGetter);
-        }
 
         $documentGenerator->addMethod($adder);
         $documentGenerator->addMethod($remover);
@@ -221,7 +185,7 @@ EOT;
         if (1 !== count($methodReflection->getParameters())) {
             $proxyGenerator->addError(
                 sprintf(
-                    'Method %s::%s() must have 1 argument, but has %d arguments, therefore it have not been generated in proxy.',
+                    'Method %s::%s() must have 1 argument, but has %d arguments, therefore it had not been generated in proxy.',
                     $proxyGenerator->getDocumentClass(),
                     $methodName,
                     count($methodReflection->getParameters())
@@ -286,7 +250,6 @@ EOT;
         $params = [];
 
         if ($this->itemMetadata instanceof DocumentField) {
-
             $proxyGenerator->addUse(DocumentInterface::class);
             $code = <<<'EOT'
 parent::{{method}}(${{param}});
