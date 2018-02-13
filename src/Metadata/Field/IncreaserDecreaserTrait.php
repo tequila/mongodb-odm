@@ -12,22 +12,32 @@ trait IncreaserDecreaserTrait
 {
     protected function generateIncreaser(DocumentGenerator $documentGenerator)
     {
-        $paramName = StringUtil::camelize($this->getPropertyName(), false);
-        $method = new MethodGenerator('increase'.ucfirst($paramName));
-        $param = new ParameterGenerator($paramName, $this->getType());
+        $methodName = 'increase'.StringUtil::camelize($this->getPropertyName(), true);
+        $method = new MethodGenerator($methodName);
+        $param = new ParameterGenerator('number', $this->getType());
         $method->setParameter($param);
-        $body = sprintf('$this->%s += abs($%s);', $this->getPropertyName(), $paramName);
+        $body = sprintf(
+            '$this->%s += abs($%s);',
+            $this->getPropertyName(),
+            $param->getName()
+        );
+        $body .= str_repeat(PHP_EOL, 2).'return $this;';
         $method->setBody($body);
         $documentGenerator->addMethod($method);
     }
 
     protected function generateDecreaser(DocumentGenerator $documentGenerator)
     {
-        $paramName = StringUtil::camelize($this->getPropertyName(), false);
-        $method = new MethodGenerator('decrease'.ucfirst($paramName));
-        $param = new ParameterGenerator($paramName, $this->getType());
+        $methodName = 'decrease'.StringUtil::camelize($this->getPropertyName(), true);
+        $method = new MethodGenerator($methodName);
+        $param = new ParameterGenerator('number', $this->getType());
         $method->setParameter($param);
-        $body = sprintf('$this->%s -= abs($%s);', $this->getPropertyName(), $paramName);
+        $body = sprintf(
+            '$this->%s -= abs($%s);',
+            $this->getPropertyName(),
+            $param->getName()
+        );
+        $body .= str_repeat(PHP_EOL, 2).'return $this;';
         $method->setBody($body);
         $documentGenerator->addMethod($method);
     }
@@ -66,6 +76,8 @@ trait IncreaserDecreaserTrait
         $code = <<<'EOT'
 parent::{{methodName}}(${{paramName}});
 $this->getRootProxy()->increment($this->getPathInDocument('{{dbFieldName}}'), abs(${{paramName}}));
+
+return $this;
 EOT;
         $code = self::compileCode($code, [
             'methodName' => $methodName,
@@ -112,6 +124,8 @@ EOT;
         $code = <<<'EOT'
 parent::{{methodName}}(${{paramName}});
 $this->getRootProxy()->increment($this->getPathInDocument('{{dbFieldName}}'), -abs(${{paramName}}));
+
+return $this;
 EOT;
         $code = self::compileCode($code, [
             'methodName' => $methodName,

@@ -54,7 +54,7 @@ class DocumentsCollection implements Iterator
         $this->cursor = $cursor;
         $this->documentClass = $documentClass;
 
-        $proxyClass = $documentManager->getProxyClass($documentClass, true);
+        $proxyClass = $documentManager->getProxyClass($documentClass);
         $cursor->setTypeMap(['root' => $proxyClass, 'document' => 'array', 'array' => 'array']);
 
         $this->generator = $this->createGenerator();
