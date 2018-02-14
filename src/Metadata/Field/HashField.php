@@ -151,7 +151,7 @@ EOT;
         $params = [];
 
         $code = <<<'EOT'
-parent::{{method}}(${{param}});
+parent::{{method}}(${{keyParam}}, ${{valueParam}});
 $this->getRootProxy()->set(
     $this->getPathInDocument('{{dbField}}').'.'.${{keyParam}}, 
     ${{valueParam}}
@@ -160,11 +160,11 @@ $this->getRootProxy()->set(
 return $this;
 EOT;
 
-        $methodParametrs = $method->getParameters();
+        $methodParameters = $method->getParameters();
         $params += [
             'method' => $methodName,
-            'keyParam' => array_shift($methodParametrs)->getName(),
-            'valueParam' => array_shift($methodParametrs)->getName(),
+            'keyParam' => array_shift($methodParameters)->getName(),
+            'valueParam' => array_shift($methodParameters)->getName(),
             'dbField' => $this->dbFieldName,
         ];
 
