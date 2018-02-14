@@ -45,7 +45,6 @@ $objectData = new class((array) $dbData, $rootProxy, $pathInDocument) extends Ab
 
             $this->unserializedDocuments[$index] = null;
         }
-        $this->array[$index] = (array)$this->array[$index];
         
         return $this->array[$index];
     }
