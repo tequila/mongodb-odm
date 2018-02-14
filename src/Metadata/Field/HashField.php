@@ -25,7 +25,7 @@ class HashField extends AbstractArrayField
         $adder->setParameter($keyParam);
         $adder->setParameter($itemParam);
         $adderBody = sprintf(
-            '$this->%s[%s] = $%s;',
+            '$this->%s[$%s] = $%s;',
             $this->getPropertyName(),
             $keyParam->getName(),
             $itemParam->getName()
