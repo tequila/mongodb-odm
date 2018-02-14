@@ -10,6 +10,27 @@ use Zend\Code\Generator\ParameterGenerator;
 
 class HashField extends AbstractArrayField
 {
+    public function getSerializationCode(): string
+    {
+        $itemSerializationCode = $this->itemMetadata->getSerializationCode();
+        $itemSerializationCode = strtr($itemSerializationCode, [
+            '$objectData' => '$item',
+            '$dbData' => '$serializedItem',
+        ]);
+
+        $code = <<<'EOT'
+$objectData = is_iterable($objectData) ? $objectData : [];
+$dbData = [];
+foreach ($objectData as $key => $item) {
+    {{itemSerializationCode}}
+    $dbData[$key] = $serializedItem;
+}
+$dbData = (object)$dbData;
+EOT;
+
+        return self::compileCode($code, ['itemSerializationCode' => $itemSerializationCode]);
+    }
+
     public function generateDocument(DocumentGenerator $documentGenerator)
     {
         if ($this->itemMetadata instanceof DocumentField) {
