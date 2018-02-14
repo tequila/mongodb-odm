@@ -2,36 +2,15 @@
 
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
-use Tequila\MongoDB\ODM\Code\PropertyGenerator;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\DocumentInterface;
-use Tequila\MongoDB\ODM\Exception\InvalidArgumentException;
-use Tequila\MongoDB\ODM\Proxy\AbstractCollection;
 use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 use Tequila\MongoDB\ODM\Util\StringUtil;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
-use Zend\Code\Generator\PropertyValueGenerator;
 
-class CollectionField extends AbstractFieldMetadata
+class ListField extends AbstractArrayField
 {
-    /**
-     * @var FieldMetadataInterface
-     */
-    private $itemMetadata;
-
-    /**
-     * @param FieldMetadataInterface $itemMetadata
-     * @param string                 $propertyName
-     * @param string|null            $dbFieldName
-     */
-    public function __construct(FieldMetadataInterface $itemMetadata, string $propertyName, string $dbFieldName = null)
-    {
-        $this->itemMetadata = $itemMetadata;
-
-        parent::__construct($propertyName, $dbFieldName);
-    }
-
     public function generateDocument(DocumentGenerator $documentGenerator)
     {
         if ($this->itemMetadata instanceof DocumentField) {
@@ -54,6 +33,10 @@ class CollectionField extends AbstractFieldMetadata
         $remover = new MethodGenerator('remove'.$camelizedItemPropertyName);
         $remover->setParameter($itemParam);
         $removerBody = <<<'EOT'
+if (!is_array($this->{{property}})) {
+    throw new \LogicException('Field {{property}} must be an array.');
+}
+
 foreach ($this->{{property}} as $key => ${{item}}) {
     if (${{param}} === ${{item}}) {
         $this->{{property}}[$key] = null;
@@ -77,94 +60,7 @@ EOT;
         parent::generateDocument($documentGenerator);
     }
 
-    public function generateProxy(AbstractGenerator $proxyGenerator)
-    {
-        $proxyGenerator->addUse(InvalidArgumentException::class);
-        $proxyGenerator->addUse(AbstractCollection::class);
-        if ($this->itemMetadata instanceof DocumentField) {
-            $proxyGenerator->addUse($this->itemMetadata->getDocumentClass());
-        }
-
-        $this->generateAdderProxy($proxyGenerator);
-        $this->generateRemoverProxy($proxyGenerator);
-
-        parent::generateProxy($proxyGenerator);
-    }
-
-    public function getType(): string
-    {
-        return 'iterable';
-    }
-
-    public function getSerializationCode(): string
-    {
-        $itemSerializationCode = $this->itemMetadata->getSerializationCode();
-        $itemSerializationCode = strtr($itemSerializationCode, [
-            '$objectData' => '$item',
-            '$dbData' => '$serializedItem',
-        ]);
-
-        $code = <<<'EOT'
-$objectData = is_iterable($objectData) ? $objectData : [];
-$dbData = [];
-foreach ($objectData as $key => $item) {
-    {{itemSerializationCode}}
-    $dbData[$key] = $serializedItem;
-}
-EOT;
-
-        return self::compileCode($code, ['itemSerializationCode' => $itemSerializationCode]);
-    }
-
-    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
-    {
-        $code = <<<'EOT'
-$objectData = new class((array) $dbData, $rootProxy, $pathInDocument) extends AbstractCollection {
-
-    private $unserializedDocuments = [];
-
-    public function offsetGet($index)
-    {        
-        if (!array_key_exists($index, $this->unserializedDocuments)) {
-            {{itemUnserializationCode}}
-
-            $this->unserializedDocuments[$index] = null;
-        }
-        
-        return $this->array[$index];
-    }
-};
-EOT;
-
-        $itemUnserializationCode = $this->itemMetadata->getUnserializationCode($proxyGenerator);
-        $itemUnserializationCode = strtr($itemUnserializationCode, [
-            '$dbData' => '$this->array[$index]',
-            '$objectData' => '$this->array[$index]',
-            '$pathInDocument' => '$this->path.\'.\'.$index',
-            '$rootProxy' => '$this->root',
-        ]);
-
-        return self::compileCode($code, ['itemUnserializationCode' => $itemUnserializationCode]);
-    }
-
-    protected function createProperty(): PropertyGenerator
-    {
-        $property = parent::createProperty();
-        $property->setDefaultValue(
-            [],
-            PropertyValueGenerator::TYPE_ARRAY_SHORT,
-            PropertyValueGenerator::OUTPUT_SINGLE_LINE
-        );
-
-        $itemType = $this->itemMetadata instanceof DocumentField
-            ? ('\\'.ltrim($this->itemMetadata->getDocumentClass(), '\\'))
-            : $this->itemMetadata->getType();
-        $property->setDocBlock('@var '.$itemType.'[]|iterable');
-
-        return $property;
-    }
-
-    private function generateAdderProxy(AbstractGenerator $proxyGenerator)
+    protected function generateAdderProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'add'.StringUtil::camelize($this->itemMetadata->getPropertyName());
         $reflection = $proxyGenerator->getReflection();
@@ -216,7 +112,7 @@ EOT;
         $proxyGenerator->addMethod($method);
     }
 
-    private function generateRemoverProxy(AbstractGenerator $proxyGenerator)
+    protected function generateRemoverProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'remove'.StringUtil::camelize($this->itemMetadata->getPropertyName());
         $reflection = $proxyGenerator->getReflection();
@@ -261,7 +157,6 @@ $this->getRootProxy()->pull(
 
 return $this;
 EOT;
-            $params['itemClass'] = $this->itemMetadata->getDocumentClass();
         } else {
             $code = <<<'EOT'
 parent::{{method}}(${{param}});

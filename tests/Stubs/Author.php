@@ -13,7 +13,7 @@ class Author
             ->setNested(true)
             ->addStringField('firstName', 'first_name')
             ->addStringField('lastName', 'last_name')
-            ->addCollectionField(
+            ->addListField(
                 new StringField('email'),
                 'emails',
                 '_emails'

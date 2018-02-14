@@ -47,9 +47,7 @@ class ObjectIdField extends AbstractFieldMetadata
     {
         if ($this->generateIfNotSet) {
             $code = <<<'EOT'
-if (null === $objectData) {
-    $objectData = new ObjectID();
-}
+$objectData = $objectData ?? new ObjectID();
 $dbData = $objectData;
 EOT;
         } else {

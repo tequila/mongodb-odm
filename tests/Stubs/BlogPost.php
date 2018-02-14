@@ -14,7 +14,7 @@ class BlogPost
             ->addStringField('title', '_title')
             ->addStringField('content', '_content')
             ->addDateField('createdAt', 'created_at')
-            ->addCollectionField(
+            ->addListField(
                 new DocumentField(Comment::class, 'comment'),
                 'comments',
                 '_comments'

@@ -6,7 +6,7 @@ use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\Repository\Repository;
 use Tequila\MongoDB\ODM\Metadata\Field\AbstractFieldMetadata;
 use Tequila\MongoDB\ODM\Metadata\Field\BooleanField;
-use Tequila\MongoDB\ODM\Metadata\Field\CollectionField;
+use Tequila\MongoDB\ODM\Metadata\Field\ListField;
 use Tequila\MongoDB\ODM\Metadata\Field\DateField;
 use Tequila\MongoDB\ODM\Metadata\Field\DocumentField;
 use Tequila\MongoDB\ODM\Metadata\Field\FieldMetadataInterface;
@@ -98,12 +98,12 @@ class ClassMetadata
      *
      * @return $this
      */
-    public function addCollectionField(
+    public function addListField(
         FieldMetadataInterface $itemMetadata,
         string $propertyName,
         string $dbFieldName = null
     ) {
-        return $this->addField(new CollectionField($itemMetadata, $propertyName, $dbFieldName));
+        return $this->addField(new ListField($itemMetadata, $propertyName, $dbFieldName));
     }
 
     /**

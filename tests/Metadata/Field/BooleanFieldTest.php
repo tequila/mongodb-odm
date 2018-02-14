@@ -47,7 +47,10 @@ class BooleanFieldTest extends TestCase
                     $this->callback(function (MethodGenerator $method) {
                         $this->assertSame('setBoolField', $method->getName());
                         $this->assertNull($method->getReturnType());
-                        $this->assertSame('$this->boolField = $boolField;', $method->getBody());
+                        $this->assertSame(
+                            '$this->boolField = $boolField;'.PHP_EOL.PHP_EOL.'return $this;',
+                            $method->getBody()
+                        );
                         $this->assertCount(1, $method->getParameters());
 
                         return true;
