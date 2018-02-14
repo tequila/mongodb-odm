@@ -17,12 +17,14 @@ abstract class AbstractArrayField extends AbstractFieldMetadata
 
     /**
      * @param AbstractGenerator $generator
+     *
      * @return mixed
      */
     abstract protected function generateAdderProxy(AbstractGenerator $generator);
 
     /**
      * @param AbstractGenerator $generator
+     *
      * @return mixed
      */
     abstract protected function generateRemoverProxy(AbstractGenerator $generator);

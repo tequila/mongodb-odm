@@ -26,8 +26,8 @@ class GeneratorFactory extends AbstractFactory
     private $metadataFactory;
 
     /**
-     * @param string $proxiesDir
-     * @param string $proxiesNamespace
+     * @param string                   $proxiesDir
+     * @param string                   $proxiesNamespace
      * @param MetadataFactoryInterface $metadataFactory
      */
     public function __construct($proxiesDir, $proxiesNamespace, MetadataFactoryInterface $metadataFactory)
@@ -46,6 +46,7 @@ class GeneratorFactory extends AbstractFactory
 
     /**
      * @param string $documentClass
+     *
      * @return string
      */
     public function generateProxyClass(string $documentClass): string
@@ -72,6 +73,7 @@ class GeneratorFactory extends AbstractFactory
 
     /**
      * @param string $documentClass
+     *
      * @return AbstractGenerator
      */
     private function getGenerator(string $documentClass): AbstractGenerator

@@ -3,6 +3,7 @@
 namespace Tequila\MongoDB\ODM\Metadata;
 
 use Tequila\MongoDB\ODM\Exception\LogicException;
+use Tequila\MongoDB\ODM\Metadata\Field\HashField;
 use Tequila\MongoDB\ODM\Repository\Repository;
 use Tequila\MongoDB\ODM\Metadata\Field\AbstractFieldMetadata;
 use Tequila\MongoDB\ODM\Metadata\Field\BooleanField;
@@ -107,6 +108,21 @@ class ClassMetadata
     }
 
     /**
+     * @param FieldMetadataInterface $itemMetadata
+     * @param string                 $propertyName
+     * @param string|null            $dbFieldName
+     *
+     * @return ClassMetadata
+     */
+    public function addHashField(
+        FieldMetadataInterface $itemMetadata,
+        string $propertyName,
+        string $dbFieldName = null
+    ) {
+        return $this->addField(new HashField($itemMetadata, $propertyName, $dbFieldName));
+    }
+
+    /**
      * @param string $propertyName
      * @param string $dbFieldName
      *
@@ -157,25 +173,23 @@ class ClassMetadata
     /**
      * @param string      $propertyName
      * @param string|null $dbFieldName
-     * @param mixed|null  $defaultValue
      *
      * @return $this
      */
-    public function addIntegerField(string $propertyName, string $dbFieldName = null, $defaultValue = 'null')
+    public function addIntegerField(string $propertyName, string $dbFieldName = null)
     {
-        return $this->addField(new IntegerField($propertyName, $dbFieldName, $defaultValue));
+        return $this->addField(new IntegerField($propertyName, $dbFieldName));
     }
 
     /**
      * @param string      $propertyName
      * @param string|null $dbFieldName
-     * @param mixed|null  $defaultValue
      *
      * @return $this
      */
-    public function addStringField(string $propertyName, string $dbFieldName = null, $defaultValue = 'null')
+    public function addStringField(string $propertyName, string $dbFieldName = null)
     {
-        return $this->addField(new StringField($propertyName, $dbFieldName, $defaultValue));
+        return $this->addField(new StringField($propertyName, $dbFieldName));
     }
 
     /**
