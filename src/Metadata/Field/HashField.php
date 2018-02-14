@@ -31,6 +31,38 @@ EOT;
         return self::compileCode($code, ['itemSerializationCode' => $itemSerializationCode]);
     }
 
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
+    {
+        $code = <<<'EOT'
+$objectData = new class((array) $dbData, $rootProxy, $pathInDocument) extends AbstractCollection {
+
+    private $unserializedDocuments = [];
+
+    public function offsetGet($index)
+    {        
+        if (!array_key_exists($index, $this->unserializedDocuments)) {
+            {{itemUnserializationCode}}
+
+            $this->unserializedDocuments[$index] = null;
+        }
+        $this->array[$index] = (array)$this->array[$index];
+        
+        return $this->array[$index];
+    }
+};
+EOT;
+
+        $itemUnserializationCode = $this->itemMetadata->getUnserializationCode($proxyGenerator);
+        $itemUnserializationCode = strtr($itemUnserializationCode, [
+            '$dbData' => '$this->array[$index]',
+            '$objectData' => '$this->array[$index]',
+            '$pathInDocument' => '$this->path.\'.\'.$index',
+            '$rootProxy' => '$this->root',
+        ]);
+
+        return self::compileCode($code, ['itemUnserializationCode' => $itemUnserializationCode]);
+    }
+
     public function generateDocument(DocumentGenerator $documentGenerator)
     {
         if ($this->itemMetadata instanceof DocumentField) {
