@@ -68,7 +68,7 @@ class Repository
     {
         $documents = $this->findAll($filter, ['limit' => 1] + $options);
 
-        return $documents->current();
+        return $documents->valid() ? $documents->current() : null;
     }
 
     /**
