@@ -30,7 +30,7 @@ abstract class AbstractCollection implements Iterator, ArrayAccess, Countable
 
     public function __construct(array $array, RootProxyInterface $root, string $path)
     {
-        $this->array = array_values($array);
+        $this->array = $array;
         $this->path = $path;
         $this->root = $root;
     }
