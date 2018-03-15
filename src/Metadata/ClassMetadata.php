@@ -377,10 +377,14 @@ class ClassMetadata
 
     /**
      * @param bool $identifiable
+     * 
+     * @return $this
      */
     public function setIdentifiable(bool $identifiable)
     {
         $this->identifiable = $identifiable;
+
+        return $this;
     }
 
     /**
