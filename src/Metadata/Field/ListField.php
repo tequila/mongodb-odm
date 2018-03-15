@@ -60,6 +60,13 @@ EOT;
         parent::generateDocument($documentGenerator);
     }
 
+    /**
+     * @param AbstractGenerator $proxyGenerator
+     *
+     * @return mixed|void
+     *
+     * @throws \ReflectionException
+     */
     protected function generateAdderProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'add'.StringUtil::camelize($this->itemMetadata->getPropertyName());
@@ -112,6 +119,13 @@ EOT;
         $proxyGenerator->addMethod($method);
     }
 
+    /**
+     * @param AbstractGenerator $proxyGenerator
+     *
+     * @return mixed|void
+     *
+     * @throws \ReflectionException
+     */
     protected function generateRemoverProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'remove'.StringUtil::camelize($this->itemMetadata->getPropertyName());

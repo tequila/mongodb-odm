@@ -32,6 +32,11 @@ abstract class AbstractGenerator
     private $errors = [];
 
     /**
+     * @var string
+     */
+    private $proxyNamespace;
+
+    /**
      * @return MethodGenerator
      */
     abstract protected function createBsonUnserializeMethod(): MethodGenerator;
@@ -55,7 +60,7 @@ abstract class AbstractGenerator
     {
         $this->metadata = $metadata;
         $this->factory = $factory;
-        $this->proxyNamespace = trim($proxyNamespace, '\\');
+        $this->proxyNamespace = $proxyNamespace;
 
         $this->classGenerator = new ClassGenerator($this->getProxyClass());
         $this->classGenerator->addUse($metadata->getDocumentClass());
@@ -99,6 +104,8 @@ abstract class AbstractGenerator
 
     /**
      * @return ClassReflection
+     *
+     * @throws \ReflectionException
      */
     public function getReflection(): ClassReflection
     {
@@ -115,6 +122,8 @@ abstract class AbstractGenerator
 
     /**
      * @return ClassGenerator
+     *
+     * @throws \ReflectionException
      */
     public function generateClass(): ClassGenerator
     {
@@ -144,6 +153,9 @@ abstract class AbstractGenerator
         return $this->proxyNamespace.'\\'.$this->getDocumentClass().'Proxy';
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function generateBsonUnserializeMethod()
     {
         if (!$this->getReflection()->hasMethod('bsonUnserialize')) {

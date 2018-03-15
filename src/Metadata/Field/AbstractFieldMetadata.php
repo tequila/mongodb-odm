@@ -40,6 +40,8 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
 
     /**
      * @param AbstractGenerator $proxyGenerator
+     *
+     * @throws \ReflectionException
      */
     public function generateProxy(AbstractGenerator $proxyGenerator)
     {
@@ -123,6 +125,11 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         return $method;
     }
 
+    /**
+     * @param AbstractGenerator $proxyGenerator
+     *
+     * @throws \ReflectionException
+     */
     protected function generateSetterProxy(AbstractGenerator $proxyGenerator)
     {
         $methodName = 'set'.StringUtil::camelize($this->propertyName);

@@ -33,6 +33,8 @@ class DocumentGenerator
 
     /**
      * @param ClassMetadata $metadata
+     *
+     * @throws \ReflectionException
      */
     public function __construct(ClassMetadata $metadata)
     {
@@ -74,8 +76,11 @@ class DocumentGenerator
 
     public function generateClass(): void
     {
-        $this->classGenerator->addUse(DocumentInterface::class);
-        $this->classGenerator->setImplementedInterfaces([DocumentInterface::class]);
+        if ($this->metadata->isIdentifiable()) {
+            $this->classGenerator->addUse(DocumentInterface::class);
+            $this->classGenerator->setImplementedInterfaces([DocumentInterface::class]);
+            $this->generateGetMongoIdMethod();
+        }
         $this->classGenerator->addTrait('UnserializableTrait');
         $this->classGenerator->addUse(UnserializableTrait::class);
         if ($this->classGenerator->hasMethod('bsonSerialize')) {
@@ -87,7 +92,6 @@ class DocumentGenerator
         }
 
         $this->classGenerator->addMethodFromGenerator($this->generateBsonSerializeMethod());
-        $this->generateGetMongoIdMethod();
         if ($this->classGenerator->hasMethod('bsonUnserialize')) {
             // Workaround for zend/code lib bug with generating methods provided by traits
             $this->classGenerator->removeMethod('bsonUnserialize');

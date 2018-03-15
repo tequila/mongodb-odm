@@ -60,6 +60,11 @@ class ClassMetadata
     private $reflection;
 
     /**
+     * @var bool
+     */
+    private $identifiable = true;
+
+    /**
      * @param string $documentClass
      * @param string $collectionNamePrefix
      */
@@ -255,6 +260,16 @@ class ClassMetadata
      */
     public function getPrimaryKeyField(): ?FieldMetadataInterface
     {
+        if (!$this->identifiable) {
+            throw new \LogicException(
+                sprintf(
+                    'Calling method %s for non-identifiable document class %s is prohibited.',
+                    __METHOD__,
+                    $this->documentClass
+                )
+            );
+        }
+
         return $this->getFieldByDbName('_id');
     }
 
@@ -353,7 +368,25 @@ class ClassMetadata
     }
 
     /**
+     * @return bool
+     */
+    public function isIdentifiable(): bool
+    {
+        return $this->identifiable;
+    }
+
+    /**
+     * @param bool $identifiable
+     */
+    public function setIdentifiable(bool $identifiable)
+    {
+        $this->identifiable = $identifiable;
+    }
+
+    /**
      * @return ClassReflection
+     *
+     * @throws \ReflectionException
      */
     public function getReflection(): ClassReflection
     {
