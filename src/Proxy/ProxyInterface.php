@@ -2,7 +2,9 @@
 
 namespace Tequila\MongoDB\ODM\Proxy;
 
-interface ProxyInterface
+use MongoDB\BSON\Unserializable;
+
+interface ProxyInterface extends Unserializable
 {
     public function getRealClass(): string;
 }

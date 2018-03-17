@@ -48,6 +48,8 @@ class GeneratorFactory extends AbstractFactory
      * @param string $documentClass
      *
      * @return string
+     *
+     * @throws \ReflectionException
      */
     public function generateProxyClass(string $documentClass): string
     {

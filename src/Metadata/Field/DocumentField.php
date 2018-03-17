@@ -26,11 +26,17 @@ class DocumentField extends AbstractFieldMetadata
         parent::__construct($propertyName, $dbFieldName);
     }
 
+    /**
+     * @return string
+     */
     public function getDocumentClass(): string
     {
         return $this->documentClass;
     }
 
+    /**
+     * @param DocumentGenerator $documentGenerator
+     */
     public function generateDocument(DocumentGenerator $documentGenerator)
     {
         $documentGenerator->addUse($this->documentClass);
@@ -38,11 +44,19 @@ class DocumentField extends AbstractFieldMetadata
         parent::generateDocument($documentGenerator);
     }
 
+    /**
+     * @return string
+     */
     public function getType(): string
     {
         return $this->documentClass;
     }
 
+    /**
+     * @param AbstractGenerator $proxyGenerator
+     *
+     * @throws \ReflectionException
+     */
     public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse($proxyGenerator->getOtherProxyClass($this->documentClass));
