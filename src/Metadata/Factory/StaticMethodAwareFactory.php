@@ -53,7 +53,7 @@ class StaticMethodAwareFactory implements MetadataFactoryInterface
 
             $metadata = new ClassMetadata($documentClass);
             call_user_func([$documentClass, 'loadClassMetadata'], $metadata);
-            if (null === $metadata->getPrimaryKeyField()) {
+            if (null === $metadata->getPrimaryKeyField() && $metadata->isIdentifiable()) {
                 $metadata->addObjectIdField('id', '_id', true);
             }
             $this->metadataCache[$documentClass] = $metadata;
