@@ -2,7 +2,6 @@
 
 namespace Tequila\MongoDB\ODM\Proxy\Generator;
 
-use MongoDB\BSON\Unserializable;
 use Tequila\MongoDB\ODM\Proxy\NestedProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\Traits\NestedProxyTrait;
 use Zend\Code\Generator\MethodGenerator;
@@ -37,7 +36,6 @@ class NestedProxyGenerator extends AbstractGenerator
     {
         return [
             NestedProxyInterface::class,
-            Unserializable::class,
         ];
     }
 
