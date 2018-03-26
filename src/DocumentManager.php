@@ -215,8 +215,18 @@ class DocumentManager
             );
         }
 
-        $this->getBulkWriteBuilder(self::getDocumentClass($document))->deleteOne(
-            ['_id' => $document->getMongoId()],
+        $this->deleteById(self::getDocumentClass($document), $document->getMongoId(), $options);
+    }
+
+    /**
+     * @param string $documentClass
+     * @param $mongoId
+     * @param array $options
+     */
+    public function deleteById(string $documentClass, $mongoId, array $options = [])
+    {
+        $this->getBulkWriteBuilder($documentClass)->deleteOne(
+            ['_id' => $mongoId],
             $options
         );
     }
