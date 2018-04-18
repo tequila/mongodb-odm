@@ -14,7 +14,7 @@ class Repository
     /**
      * @var DocumentManager
      */
-    private $documentManager;
+    protected $documentManager;
 
     /**
      * @var string
@@ -91,7 +91,7 @@ class Repository
     public function findOneAndDelete(array $filter, array $options = [])
     {
         $options['typeMap'] = [
-            'root' => $this->documentManager->getProxyClass($this->documentClass, true),
+            'root' => $this->documentManager->getProxyClass($this->documentClass),
             'document' => 'array',
         ];
 
@@ -113,7 +113,7 @@ class Repository
     public function findOneAndUpdate(array $filter, array $update, array $options = [])
     {
         $options['typeMap'] = [
-            'root' => $this->documentManager->getProxyClass($this->documentClass, true),
+            'root' => $this->documentManager->getProxyClass($this->documentClass),
             'document' => 'array',
         ];
 
@@ -135,7 +135,7 @@ class Repository
     public function findOneAndReplace(array $filter, $replacement, array $options = [])
     {
         $options['typeMap'] = [
-            'root' => $this->documentManager->getProxyClass($this->documentClass, true),
+            'root' => $this->documentManager->getProxyClass($this->documentClass),
             'document' => 'array',
         ];
 
