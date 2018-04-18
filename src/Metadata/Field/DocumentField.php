@@ -78,7 +78,7 @@ $objectData = null === $dbData
         'root' => {{proxyClass}}::class, 
         'document' => 'array'
     ]);
-if ($objectData instanceof NestedProxyInterface) {
+if ($objectData instanceof \Tequila\MongoDB\ODM\Proxy\NestedProxyInterface) {
     $objectData->setPathInDocument($pathInDocument);
     $objectData->setRootProxy($rootProxy);
     $objectData->doBsonUnserialize();

@@ -41,6 +41,10 @@ abstract class AbstractArrayField extends AbstractFieldMetadata
         parent::__construct($propertyName, $dbFieldName);
     }
 
+    /**
+     * @param AbstractGenerator $proxyGenerator
+     * @throws \ReflectionException
+     */
     public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(InvalidArgumentException::class);

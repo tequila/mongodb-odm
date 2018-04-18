@@ -22,6 +22,10 @@ class DateField extends AbstractFieldMetadata
         return DateTimeInterface::class;
     }
 
+    /**
+     * @param AbstractGenerator $proxyGenerator
+     * @throws \ReflectionException
+     */
     public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(UTCDateTime::class);
