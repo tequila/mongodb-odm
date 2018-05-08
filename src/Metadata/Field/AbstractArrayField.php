@@ -51,6 +51,9 @@ abstract class AbstractArrayField extends AbstractFieldMetadata
         $proxyGenerator->addUse(AbstractCollection::class);
         if ($this->itemMetadata instanceof DocumentField) {
             $proxyGenerator->addUse($this->itemMetadata->getDocumentClass());
+            $proxyGenerator->addUse(
+                $proxyGenerator->getOtherProxyClass($this->itemMetadata->getDocumentClass())
+            );
         }
 
         $this->generateAdderProxy($proxyGenerator);
