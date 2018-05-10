@@ -47,9 +47,9 @@ class Repository
     /**
      * @param array $ids
      *
-     * @return DocumentsCollection
+     * @return DocumentsCollection|iterable
      */
-    public function findAllByIds(array $ids): DocumentsCollection
+    public function findAllByIds(array $ids): iterable
     {
         if (!$ids) {
             throw new InvalidArgumentException('$ids array cannot be empty.');
