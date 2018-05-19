@@ -118,7 +118,13 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         $param = new ParameterGenerator($paramName);
         $param->setType($this->getType());
         $method->setParameter($param);
-        $code = sprintf('$this->%s = $%s;', $this->propertyName, $paramName);
+        $code = strtr(
+            $this->getSerializationCode(),
+            [
+                '$dbData' => '$this->'.$this->propertyName,
+                '$objectData' => '$'.$paramName,
+            ]
+        );
         $code .= str_repeat(PHP_EOL, 2).'return $this;';
         $method->setBody($code);
 
