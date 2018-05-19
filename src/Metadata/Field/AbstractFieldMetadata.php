@@ -118,13 +118,7 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         $param = new ParameterGenerator($paramName);
         $param->setType($this->getType());
         $method->setParameter($param);
-        $code = strtr(
-            $this->getSerializationCode(),
-            [
-                '$dbData' => '$this->'.$this->propertyName,
-                '$objectData' => '$'.$paramName,
-            ]
-        );
+        $code = sprintf('$this->%s = $%s;', $this->propertyName, $paramName);
         $code .= str_repeat(PHP_EOL, 2).'return $this;';
         $method->setBody($code);
 
@@ -166,16 +160,26 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         }
 
         $method = MethodGenerator::fromReflection($methodReflection);
+        $paramName = current($method->getParameters())->getName();
 
         $code = <<<'EOT'
 parent::{{methodName}}(${{paramName}});
+%s
 $this->getRootProxy()->set($this->getPathInDocument('{{dbFieldName}}'), ${{paramName}});
 
 return $this;
 EOT;
+        $paramToDbValueConversionCode = strtr(
+            $this->getSerializationCode(),
+            [
+                '$dbData' => '$'.$paramName,
+                '$objectData' => '$'.$paramName,
+            ]
+        );
+        $code = sprintf($code, $paramToDbValueConversionCode);
         $code = self::compileCode($code, [
             'methodName' => $methodName,
-            'paramName' => current($method->getParameters())->getName(),
+            'paramName' => $paramName,
             'dbFieldName' => $this->dbFieldName,
         ]);
 
