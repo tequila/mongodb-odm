@@ -154,4 +154,12 @@ class Repository
     {
         return $this->documentManager->getCollectionByDocumentClass($this->documentClass);
     }
+
+    /**
+     * @return DocumentManager
+     */
+    public function getDocumentManager(): DocumentManager
+    {
+        return $this->documentManager;
+    }
 }
