@@ -19,7 +19,7 @@ class Repository
     /**
      * @var string
      */
-    private $documentClass;
+    protected $documentClass;
 
     /**
      * @param DocumentManager $documentManager
