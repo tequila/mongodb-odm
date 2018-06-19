@@ -114,6 +114,14 @@ class DocumentsCollection implements Iterator
     }
 
     /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return iterator_to_array($this);
+    }
+
+    /**
      * @return \Generator
      */
     private function createGenerator()
