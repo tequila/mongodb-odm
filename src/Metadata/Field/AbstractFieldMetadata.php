@@ -165,14 +165,14 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         $code = <<<'EOT'
 parent::{{methodName}}(${{paramName}});
 %s
-$this->getRootProxy()->set($this->getPathInDocument('{{dbFieldName}}'), ${{paramName}});
+$this->getRootProxy()->set($this->getPathInDocument('{{dbFieldName}}'), $dbValue);
 
 return $this;
 EOT;
         $paramToDbValueConversionCode = strtr(
             $this->getSerializationCode(),
             [
-                '$dbData' => '$'.$paramName,
+                '$dbData' => '$dbValue',
                 '$objectData' => '$'.$paramName,
             ]
         );

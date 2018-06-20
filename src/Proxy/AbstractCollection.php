@@ -28,6 +28,11 @@ abstract class AbstractCollection implements Iterator, ArrayAccess, Countable
      */
     protected $position;
 
+    /**
+     * @param array $array
+     * @param RootProxyInterface $root
+     * @param string $path
+     */
     public function __construct(array $array, RootProxyInterface $root, string $path)
     {
         $this->array = $array;
