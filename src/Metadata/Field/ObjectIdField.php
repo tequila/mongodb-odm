@@ -8,22 +8,6 @@ use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
 class ObjectIdField extends AbstractFieldMetadata
 {
-    /**
-     * @var bool
-     */
-    private $generateIfNotSet;
-
-    /**
-     * @param string $propertyName
-     * @param string $dbFieldName
-     * @param bool   $generateIfNotSet
-     */
-    public function __construct(string $propertyName, string $dbFieldName = null, bool $generateIfNotSet = false)
-    {
-        $this->generateIfNotSet = $generateIfNotSet;
-        parent::__construct($propertyName, $dbFieldName);
-    }
-
     public function generateDocument(DocumentGenerator $documentGenerator)
     {
         $documentGenerator->addUse(ObjectID::class);
@@ -31,6 +15,11 @@ class ObjectIdField extends AbstractFieldMetadata
         parent::generateDocument($documentGenerator);
     }
 
+    /**
+     * @param AbstractGenerator $proxyGenerator
+     *
+     * @throws \ReflectionException
+     */
     public function generateProxy(AbstractGenerator $proxyGenerator)
     {
         $proxyGenerator->addUse(ObjectID::class);
@@ -40,20 +29,26 @@ class ObjectIdField extends AbstractFieldMetadata
 
     public function getType(): string
     {
-        return ObjectID::class;
+        return 'string';
     }
 
     public function getSerializationCode(): string
     {
-        if ($this->generateIfNotSet) {
-            $code = <<<'EOT'
-$objectData = $objectData ?? new ObjectID();
-$dbData = $objectData;
+        return <<<'EOT'
+if (null === $objectData) {
+    $dbData = null;
+} elseif (!$objectData instanceof ObjectID) {
+    $dbData = new ObjectID((string)$objectData);
+} else {
+    $dbData = $objectData;
+}
 EOT;
-        } else {
-            $code = parent::getSerializationCode();
-        }
+    }
 
-        return $code;
+    public function getUnserializationCode(AbstractGenerator $proxyGenerator): string
+    {
+        return <<<'EOT'
+$objectData = null === $dbData ? null : (string) $dbData;
+EOT;
     }
 }
