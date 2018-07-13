@@ -3,10 +3,14 @@
 namespace Tequila\MongoDB\ODM\Proxy\Traits;
 
 use MongoDB\Operation\BulkWrite;
+use Tequila\MongoDB\ODM\DocumentManager;
 use Tequila\MongoDB\ODM\Proxy\RootProxyInterface;
 use Tequila\MongoDB\ODM\Proxy\UpdateBuilderInterface;
 use Tequila\MongoDB\ODM\WriteModelInterface;
 
+/**
+ * @property DocumentManager $documentManager
+ */
 trait RootProxyTrait
 {
     use DocumentManagerAwareTrait;

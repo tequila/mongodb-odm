@@ -2,7 +2,7 @@
 
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
-use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\ObjectId;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
@@ -22,7 +22,7 @@ class ObjectIdField extends AbstractFieldMetadata
      */
     public function generateProxy(AbstractGenerator $proxyGenerator)
     {
-        $proxyGenerator->addUse(ObjectID::class);
+        $proxyGenerator->addUse(ObjectId::class);
 
         parent::generateProxy($proxyGenerator);
     }
@@ -37,8 +37,8 @@ class ObjectIdField extends AbstractFieldMetadata
         return <<<'EOT'
 if (null === $objectData) {
     $dbData = null;
-} elseif (!$objectData instanceof ObjectID) {
-    $dbData = new ObjectID((string)$objectData);
+} elseif (!$objectData instanceof ObjectId) {
+    $dbData = new ObjectId((string)$objectData);
 } else {
     $dbData = $objectData;
 }
