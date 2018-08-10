@@ -34,7 +34,7 @@ class ListField extends AbstractArrayField
         $remover->setParameter($itemParam);
         $removerBody = <<<'EOT'
 if (null === $this->{{property}}) {
-    return;
+    return $this;
 }
 foreach ($this->{{property}} as $key => ${{item}}) {
     if (${{param}} === ${{item}}) {
