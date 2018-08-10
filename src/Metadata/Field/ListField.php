@@ -98,18 +98,28 @@ EOT;
         }
 
         $method = MethodGenerator::fromReflection($methodReflection);
-        $params = [];
+        $paramName = current($method->getParameters())->getName();
 
         $code = <<<'EOT'
 parent::{{method}}(${{param}});
-$this->getRootProxy()->push($this->getPathInDocument('{{dbField}}'), ${{param}});
+%s
+$this->getRootProxy()->push($this->getPathInDocument('{{dbField}}'), $dbValue);
 
 return $this;
 EOT;
 
-        $params += [
+        $paramToDbValueConversionCode = strtr(
+            $this->itemMetadata->getSerializationCode(),
+            [
+                '$dbData' => '$dbValue',
+                '$objectData' => '$'.$paramName,
+            ]
+        );
+        $code = sprintf($code, $paramToDbValueConversionCode);
+
+        $params = [
             'method' => $methodName,
-            'param' => current($method->getParameters())->getName(),
+            'param' => $paramName,
             'dbField' => $this->dbFieldName,
         ];
 
@@ -174,10 +184,19 @@ EOT;
         } else {
             $code = <<<'EOT'
 parent::{{method}}(${{param}});
-$this->getRootProxy()->pull($this->getPathInDocument('{{dbField}}'), ${{param}});
+%s
+$this->getRootProxy()->pull($this->getPathInDocument('{{dbField}}'), $dbValue);
 
 return $this;
 EOT;
+            $paramToDbValueConversionCode = strtr(
+                $this->itemMetadata->getSerializationCode(),
+                [
+                    '$dbData' => '$dbValue',
+                    '$objectData' => '$'.$paramName,
+                ]
+            );
+            $code = sprintf($code, $paramToDbValueConversionCode);
         }
 
         $params += [
