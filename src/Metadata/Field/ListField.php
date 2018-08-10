@@ -33,10 +33,9 @@ class ListField extends AbstractArrayField
         $remover = new MethodGenerator('remove'.$camelizedItemPropertyName);
         $remover->setParameter($itemParam);
         $removerBody = <<<'EOT'
-if (!is_array($this->{{property}})) {
-    throw new \LogicException('Field {{property}} must be an array.');
+if (null === $this->{{property}}) {
+    return;
 }
-
 foreach ($this->{{property}} as $key => ${{item}}) {
     if (${{param}} === ${{item}}) {
         $this->{{property}}[$key] = null;
