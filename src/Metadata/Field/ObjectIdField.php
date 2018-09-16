@@ -3,6 +3,7 @@
 namespace Tequila\MongoDB\ODM\Metadata\Field;
 
 use MongoDB\BSON\ObjectId;
+use MongoDB\Driver\Exception\InvalidArgumentException;
 use Tequila\MongoDB\ODM\Code\DocumentGenerator;
 use Tequila\MongoDB\ODM\Proxy\Generator\AbstractGenerator;
 
@@ -11,6 +12,7 @@ class ObjectIdField extends AbstractFieldMetadata
     public function generateDocument(DocumentGenerator $documentGenerator)
     {
         $documentGenerator->addUse(ObjectID::class);
+        $documentGenerator->addUse(InvalidArgumentException::class, 'MongoInvalidArgumentException');
 
         parent::generateDocument($documentGenerator);
     }
@@ -38,7 +40,11 @@ class ObjectIdField extends AbstractFieldMetadata
 if (null === $objectData) {
     $dbData = null;
 } elseif (!$objectData instanceof ObjectId) {
-    $dbData = new ObjectId((string)$objectData);
+    try {
+        $dbData = new ObjectId((string)$objectData);
+    } catch(MongoInvalidArgumentException $e) {
+        $dbData = $objectData;
+    }
 } else {
     $dbData = $objectData;
 }
