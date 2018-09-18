@@ -105,7 +105,9 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
     protected function createGetter(): MethodGenerator
     {
         $method = new MethodGenerator('get'.StringUtil::camelize($this->propertyName));
-        $method->setReturnType('?'.$this->getType());
+        if ('mixed' !== $type = $this->getType()) {
+            $method->setReturnType('?'.$type);
+        }
         $method->setBody(sprintf('return $this->%s;', $this->propertyName));
 
         return $method;
@@ -116,7 +118,9 @@ abstract class AbstractFieldMetadata implements FieldMetadataInterface
         $method = new MethodGenerator('set'.StringUtil::camelize($this->propertyName));
         $paramName = StringUtil::camelize($this->propertyName, false);
         $param = new ParameterGenerator($paramName);
-        $param->setType($this->getType());
+        if ('mixed' !== $type = $this->getType()) {
+            $param->setType($type);
+        }
         $method->setParameter($param);
         $code = sprintf('$this->%s = $%s;', $this->propertyName, $paramName);
         $code .= str_repeat(PHP_EOL, 2).'return $this;';

@@ -4,6 +4,7 @@ namespace Tequila\MongoDB\ODM\Metadata;
 
 use Tequila\MongoDB\ODM\Exception\LogicException;
 use Tequila\MongoDB\ODM\Metadata\Field\HashField;
+use Tequila\MongoDB\ODM\Metadata\Field\RawField;
 use Tequila\MongoDB\ODM\Repository\Repository;
 use Tequila\MongoDB\ODM\Metadata\Field\AbstractFieldMetadata;
 use Tequila\MongoDB\ODM\Metadata\Field\BooleanField;
@@ -195,6 +196,17 @@ class ClassMetadata
     public function addStringField(string $propertyName, string $dbFieldName = null)
     {
         return $this->addField(new StringField($propertyName, $dbFieldName));
+    }
+
+    /**
+     * @param string $propertyName
+     * @param string|null $dbFieldName
+     * 
+     * @return ClassMetadata
+     */
+    public function addRawField(string $propertyName, string $dbFieldName = null)
+    {
+        return $this->addField(new RawField($propertyName, $dbFieldName));
     }
 
     /**
